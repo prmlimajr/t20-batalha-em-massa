@@ -168,8 +168,16 @@ export const PENALIDADE_NOVO_GENERAL = "1d6+1"; // subtraída do bônus de Guerr
 /** Motivação: teste de Atuação do general contra esta CD. */
 export const CD_MOTIVACAO = 20;
 
-/** Regras opcionais (p. 375). */
+/**
+ * Regras opcionais (p. 375), mais os testes de pré-batalha (p. 371–372), que nesta mesa também são opcionais:
+ * por padrão o mestre define terreno e motivação direto nos modificadores de Guerra.
+ * ("Rolando pelos generais" não está aqui: o sorteio de um jogador para rolar o general aliado é o padrão, T11.)
+ */
 export const OPCIONAIS = {
+	preBatalha: {
+		nome: "Testes de pré-batalha",
+		texto: "Antes do primeiro turno, os generais fazem um teste oposto de Sobrevivência para escolher o terreno (o vencedor recebe Terreno favorável, +2) e um teste de Atuação contra CD 20 para motivar as tropas (+1, e +1 a cada 5 acima da CD; falhar por 5 ou mais deixa as tropas desmotivadas, −2). Desligada: o mestre define esses bônus direto nos modificadores de Guerra."
+	},
 	acoesAbertas: {
 		nome: "Ações abertas",
 		texto: "Em vez de rolar eventos, o mestre pode permitir que os jogadores descrevam as ações de seus personagens, usando mecânicas similares aos eventos para resolvê-las — ou alternar entre rodadas com eventos e rodadas com ações livres, ou, ainda, permitir ações abertas caso o grupo passe num teste de Posicionamento Avançado. Ações mais relevantes devem exigir que o herói esteja numa posição mais avançada — e posições avançadas devem acarretar maiores riscos!"
@@ -189,10 +197,6 @@ export const OPCIONAIS = {
 	danoMedio: {
 		nome: "Dano médio",
 		texto: "Para diminuir a quantidade de rolagens e acelerar a batalha, você pode substituir todas as rolagens de dano pelo dano médio dos ataques e efeitos: a média baixa de cada dado (2 para 1d4, 3 para 1d6, 4 para 1d8…). No crítico, o valor máximo de cada dado multiplicado (críticos x2) ou 1,5 vezes o valor máximo (críticos x3)."
-	},
-	rolandoPelosGenerais: {
-		nome: "Rolando pelos generais",
-		texto: "Mesmo que o general aliado seja um NPC, deixe os jogadores rolarem o teste de Guerra por ele, revezando-se para que todos participem."
 	}
 };
 

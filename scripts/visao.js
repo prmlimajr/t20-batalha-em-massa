@@ -93,6 +93,7 @@ export function visaoBatalha(salvo, { resolver = (r) => r } = {}) {
 		// Rodapé: chave da mensagem da etapa + área citada ("O Front aguarda sua ordem.")
 		mensagem: { etapa: pre ? ETAPA_PRE : e.etapa, area: areaGrupo.subtitulo },
 		imagens: e.imagens,
-		lobosSolitarios: e.opcionais.lobosSolitarios
+		lobosSolitarios: e.opcionais.lobosSolitarios,
+		preBatalha: e.opcionais.preBatalha
 	};
 }

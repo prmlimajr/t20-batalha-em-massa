@@ -1,4 +1,5 @@
 <div class="t20bm-tabuleiro" style="{{estiloFundo}}">
+	<div class="t20bm-aviso-modal" role="status" aria-live="polite"></div>
 	<div class="t20bm-tabuleiro-conteudo">
 
 		{{!-- ============ Cabeçalho ============ --}}
@@ -122,7 +123,7 @@
 					<span class="t20bm-sobretitulo">{{subtitulo}}</span>
 					<div class="t20bm-herois">
 						{{#each herois}}
-						<img class="t20bm-token heroi {{#if podeVer}}clicavel{{/if}}" src="{{img}}" alt="{{nome}}" data-tooltip="{{nome}}" {{#if podeVer}}data-action="abrirFicha" data-uuid="{{uuid}}"{{/if}}>
+						<img class="t20bm-token heroi {{#if podeVer}}clicavel{{/if}} {{#if arrastavel}}arrastavel{{/if}}" src="{{img}}" alt="{{nome}}" data-tooltip="{{nome}}" data-heroi="{{uuid}}" {{#if arrastavel}}draggable="true" data-destinos="{{destinos}}"{{/if}} {{#if podeVer}}data-action="abrirFicha" data-uuid="{{uuid}}"{{/if}}>
 						{{/each}}
 					</div>
 				</div>
@@ -135,7 +136,35 @@
 			<div>
 				<h2>{{mensagemTitulo}}</h2>
 				<p>{{mensagemTexto}}</p>
+				{{#if movimento.mostrar}}
+				<div class="t20bm-movimento">
+					{{#each movimento.opcoes}}
+					<div class="t20bm-movimento-linha">
+						<span class="t20bm-sobretitulo">{{rotulo}}</span>
+						{{#if recuar}}<button type="button" data-action="mover" data-heroi="{{uuid}}" data-para="{{paraRecuar}}"><i class="fa-solid fa-arrow-left"></i> {{localize "T20BM.Posicionamento.Recuar"}}</button>{{/if}}
+						{{#if avancar}}<button type="button" data-action="mover" data-heroi="{{uuid}}" data-para="{{paraAvancar}}">{{localize "T20BM.Posicionamento.Avancar"}} <i class="fa-solid fa-arrow-right"></i></button>{{/if}}
+					</div>
+					{{else}}
+					<span class="t20bm-movimento-feito"><i class="fa-solid fa-check"></i> {{#if movimento.lobos}}{{localize "T20BM.Posicionamento.JaMoveuHeroi"}}{{else}}{{localize "T20BM.Posicionamento.JaMoveuGrupo"}}{{/if}}</span>
+					{{/each}}
+					<span class="t20bm-movimento-dica">{{localize "T20BM.Posicionamento.Dica"}}</span>
+				</div>
+				{{/if}}
 			</div>
+			{{#if gm}}
+			<div class="t20bm-conducao">
+				{{#if pre}}
+				{{#if preBatalha}}
+				<button type="button" data-action="terreno" {{#if ocupado}}disabled{{/if}} data-tooltip="T20BM.Modal.TerrenoDica"><i class="fa-solid fa-mountain-sun"></i> {{localize "T20BM.Teste.Terreno"}}</button>
+				<button type="button" data-action="motivacao" {{#if ocupado}}disabled{{/if}} data-tooltip="T20BM.Modal.MotivacaoDica"><i class="fa-solid fa-bullhorn"></i> {{localize "T20BM.Teste.Motivacao"}}</button>
+				{{/if}}
+				<button type="button" class="t20bm-principal" data-action="avancar" {{#if ocupado}}disabled{{/if}}>{{localize "T20BM.Modal.Iniciar"}} <i class="fa-solid fa-arrow-right"></i></button>
+				{{else}}
+				{{#if podeVoltar}}<button type="button" data-action="voltar" {{#if ocupado}}disabled{{/if}}><i class="fa-solid fa-arrow-left"></i> {{localize "T20BM.Modal.Voltar"}}</button>{{/if}}
+				<button type="button" class="t20bm-principal" data-action="avancar" {{#if ocupado}}disabled{{/if}}>{{localize "T20BM.Modal.Avancar"}} <i class="fa-solid fa-arrow-right"></i></button>
+				{{/if}}
+			</div>
+			{{/if}}
 		</footer>
 	</div>
 </div>

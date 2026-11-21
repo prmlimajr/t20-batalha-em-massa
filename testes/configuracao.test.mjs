@@ -89,9 +89,10 @@ assert.deepEqual([salvo.exercitos[0].pontos, salvo.exercitos[1].pontos], [11, 9]
 
 /* Pendências */
 assert.deepEqual(pendencias(estadoPadrao()), ["SemNome", "SemGeneralAliado", "SemGeneralInimigo", "SemHerois", "SemInimigos"]);
+assert.deepEqual(pendencias(completarEstado({ nome: "X", exercitos: [{ general: { nome: "A" } }, { general: { nome: "B", guerra: 0 } }], herois: [{ uuid: "h" }], tabelaInimigos: [{}] })), ["SemGuerraAliado"], "Guerra 0 é válido; vazio avisa");
 const completo = completarEstado({
 	nome: "X",
-	exercitos: [{ general: { uuid: "Actor.a" } }, { general: { nome: "Zallia" } }],
+	exercitos: [{ general: { uuid: "Actor.a", guerra: 7 } }, { general: { nome: "Zallia", guerra: 5 } }],
 	herois: [{ uuid: "Actor.h" }],
 	tabelaInimigos: ["Actor.i"]
 });
@@ -102,7 +103,7 @@ console.log("configuracao: ok");
 /* Regras opcionais (T6) */
 import { listaOpcionais, OPCIONAIS_TRAVADOS } from "../scripts/configuracao.js";
 const lista6 = listaOpcionais(estadoPadrao());
-assert.equal(lista6.length, 6);
+assert.equal(lista6.length, 6, "6 opcionais: pré-batalha + 5 do livro");
 assert.ok(lista6.every((o) => !o.ativa && !o.travada && o.nome && o.texto));
 const emCurso = completarEstado({ iniciada: true, opcionais: { lobosSolitarios: true, danoMedio: true } });
 const lista6b = listaOpcionais(emCurso);
@@ -139,3 +140,7 @@ assert.deepEqual(comSub.areas[0], { nome: "Topo da colina", posicao: "acampament
 assert.equal(comSub.areas[1].nome, "Retaguarda", "nome vazio volta ao padrão");
 
 console.log("token e áreas: ok");
+
+assert.equal(estadoPadrao().opcionais.preBatalha, false, "pré-batalha desligada por padrão");
+assert.equal("rolandoPelosGenerais" in completarEstado({ opcionais: { rolandoPelosGenerais: true } }).opcionais, false);
+console.log("pré-batalha opcional: ok");

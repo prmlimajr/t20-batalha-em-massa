@@ -65,9 +65,9 @@
 			"NomeManual": "Nome (sem ator)",
 			"ImagemManual": "Imagem",
 			"AtorSumiu": "ator não encontrado",
-			"Guerra": "Guerra",
-			"GuerraDaFicha": "Guerra da ficha: {valor}. Preencha só para usar outro valor.",
-			"GuerraManual": "Sem ator com a perícia Guerra: informe o bônus de Guerra do general.",
+			"Guerra": "Bônus de Guerra",
+			"GuerraDaFicha": "A rolagem do general é 1d20 + este bônus. Guerra na ficha: {valor}.",
+			"GuerraManual": "A rolagem do general é 1d20 + este bônus.",
 			"Personalidades": "Personalidades presentes",
 			"Estandartes": "Estandartes",
 			"Modificadores": "Modificadores de Guerra",
@@ -90,7 +90,9 @@
 				"SemGeneralAliado": "Seu exército não tem general.",
 				"SemGeneralInimigo": "O exército inimigo não tem general.",
 				"SemHerois": "Nenhum herói na batalha.",
-				"SemInimigos": "A tabela de inimigos está vazia: cadastre os inimigos na aba Inimigos."
+				"SemInimigos": "A tabela de inimigos está vazia: cadastre os inimigos na aba Inimigos.",
+				"SemGuerraAliado": "O general do seu exército está sem bônus de Guerra (a rolagem usará +0).",
+				"SemGuerraInimigo": "O general inimigo está sem bônus de Guerra (a rolagem usará +0)."
 			}
 		},
 		"Inimigos": {
@@ -109,7 +111,7 @@
 			"TabelaVazia": "A tabela de inimigos está vazia. Cadastre os inimigos no configurador da batalha (aba Inimigos)."
 		},
 		"Opcionais": {
-			"Dica": "Regras opcionais do Apêndice B (p. 375), por batalha. Lobos solitários define se o grupo anda junto e não pode mudar depois que a batalha começa (para mudar, reinicie a batalha no gerenciador).",
+			"Dica": "Regras opcionais do Apêndice B, por batalha. Lobos solitários define se o grupo anda junto e não pode mudar depois que a batalha começa (para mudar, reinicie a batalha no gerenciador).",
 			"Travada": "travada: a batalha já começou"
 		},
 		"Modal": {
@@ -128,7 +130,7 @@
 			"Mensagens": {
 				"pre": {
 					"Titulo": "Os exércitos se alinham.",
-					"Texto": "Os generais escolhem o terreno e motivam as tropas antes do primeiro turno."
+					"Texto": "O mestre inicia a batalha quando todos estiverem prontos."
 				},
 				"preparacao": {
 					"Titulo": "Os heróis se preparam.",
@@ -136,7 +138,7 @@
 				},
 				"posicionamento": {
 					"Titulo": "Escolham sua posição.",
-					"Texto": "Avancem, recuem ou permaneçam: uma área por turno. Posições avançadas trazem eventos mais perigosos e maiores recompensas."
+					"Texto": "O grupo avança, recua ou permanece: uma área por turno. Posições avançadas trazem eventos mais perigosos e maiores recompensas."
 				},
 				"evento": {
 					"Titulo": "O {area} aguarda sua ordem.",
@@ -145,7 +147,52 @@
 				"generais": {
 					"Titulo": "Os generais medem forças.",
 					"Texto": "Teste de Guerra oposto: o vencedor ganha 1 ponto de vitória, mais 1 a cada 5 de diferença."
+				},
+				"posicionamentoLobos": {
+					"Titulo": "Cada herói escolhe sua posição.",
+					"Texto": "Avance, recue ou permaneça: uma área por turno. Heróis em áreas diferentes enfrentam eventos diferentes."
 				}
+			},
+			"Iniciar": "Iniciar batalha",
+			"Avancar": "Avançar etapa",
+			"Voltar": "Voltar etapa",
+			"TerrenoDica": "Teste oposto de Sobrevivência dos generais: o vencedor recebe Terreno favorável (+2). Rolar de novo substitui o resultado.",
+			"MotivacaoDica": "Atuação de cada general contra CD 20: motivadas (+1, +1 a cada 5 acima) ou desmotivadas (−2, falha por 5 ou mais). Rolar de novo substitui o resultado.",
+			"Falha": "Algo deu errado ao conduzir a batalha. Veja o console (F12)."
+		},
+		"Teste": {
+			"Terreno": "Terreno",
+			"Motivacao": "Motivação",
+			"Oposto": "Teste oposto de {pericia}",
+			"ContraCD": "{pericia} contra CD {cd}",
+			"Vence": "{exercito} escolhe o terreno: Terreno favorável (+2).",
+			"EmpatePersistente": "Empate persistente: ninguém recebe o terreno. Role de novo.",
+			"Desempates": "Empate também no bônus: rolado de novo {n}×.",
+			"DesempateBonus": "Empate no total: vence o maior bônus.",
+			"Motivadas": "Tropas motivadas {valor}",
+			"Desmotivadas": "Tropas desmotivadas −2",
+			"SemEfeito": "Sem efeito",
+			"SemFicha": "sem ficha: bônus 0",
+			"PreparacaoTitulo": "Turno {n}: preparação"
+		},
+		"Socket": {
+			"SemMestre": "Nenhum mestre conectado: o pedido não pode ser atendido agora."
+		},
+		"Posicionamento": {
+			"Grupo": "Grupo",
+			"Recuar": "Recuar",
+			"Avancar": "Avançar",
+			"JaMoveuGrupo": "O grupo já se moveu neste turno.",
+			"JaMoveuHeroi": "Seu herói já se moveu neste turno.",
+			"Dica": "Arraste o token para a área vizinha ou use os botões. Uma área por turno.",
+			"Motivos": {
+				"NaoEsta": "Esse herói não está na batalha.",
+				"AreaInvalida": "Área inválida.",
+				"MesmaArea": "O herói já está nessa área.",
+				"NaoDono": "Você só pode mover o seu herói.",
+				"ForaDaEtapa": "Só é possível mover na etapa de Posicionamento.",
+				"JaMoveu": "O movimento deste turno já foi feito.",
+				"UmaArea": "Só é possível avançar ou recuar uma área por turno."
 			}
 		}
 	}

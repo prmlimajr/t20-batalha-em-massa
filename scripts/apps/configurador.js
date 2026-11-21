@@ -162,7 +162,13 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 
 		if (modo === "slot") {
 			const atual = foundry.utils.getProperty(this.rascunho, caminhoCampo) ?? {};
-			return this.#definir(caminhoCampo, { ...atual, ...retrato });
+			const novo = { ...atual, ...retrato };
+			// General: o bônus de Guerra do configurador é o que vale na rolagem; vem preenchido com o da ficha.
+			const guerraFicha = Number(ator.system?.pericias?.guer?.value);
+			if (caminhoCampo.endsWith(".general") && Number.isFinite(guerraFicha) && (atual.guerra === null || atual.guerra === undefined || atual.guerra === "")) {
+				novo.guerra = guerraFicha;
+			}
+			return this.#definir(caminhoCampo, novo);
 		}
 		if (modo === "inimigos") {
 			// Sem deduplicar: o mesmo inimigo em mais de uma face pesa o sorteio.

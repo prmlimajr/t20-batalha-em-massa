@@ -7,7 +7,8 @@
  *
  * Spec: SDD/t20-batalha-em-massa/feature/spec.md
  */
-import { MODULE_ID, SOCKET, L, log } from "./modulo.js";
+import { MODULE_ID, L, log } from "./modulo.js";
+import { registrarSocket } from "./socket.js";
 import * as armazenamento from "./armazenamento.js";
 import { GerenciadorBatalhas, MenuGerenciador } from "./apps/gerenciador.js";
 import { ModalBatalha } from "./apps/modal-batalha.js";
@@ -47,19 +48,6 @@ function adicionarBotaoControles(controles) {
 	} catch (erro) {
 		console.warn(`${MODULE_ID} | não foi possível adicionar o botão aos controles`, erro);
 	}
-}
-
-/* ---------------- Socket ---------------- */
-
-/** Tratadores das mensagens de socket, por tipo. Preenchidos nas próximas tasks (T9, T10). */
-const TRATADORES = {};
-
-function registrarSocket() {
-	game.socket.on(SOCKET, (mensagem) => {
-		const tratador = TRATADORES[mensagem?.tipo];
-		if (!tratador) return log("mensagem de socket desconhecida", mensagem);
-		tratador(mensagem);
-	});
 }
 
 /* ---------------- Hooks ---------------- */

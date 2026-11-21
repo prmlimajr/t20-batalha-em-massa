@@ -15,8 +15,8 @@ Spec e plano de tasks: `SDD/t20-batalha-em-massa/feature/spec.md`.
 - [x] T5 — Tabela de inimigos (falta testar no Foundry)
 - [x] T6 — Regras opcionais (falta testar no Foundry)
 - [x] T7 — Modal da batalha (falta testar no Foundry)
-- [ ] T8 — Condução das etapas
-- [ ] T9 — Posicionamento
+- [x] T8 — Condução das etapas (falta testar no Foundry)
+- [x] T9 — Posicionamento (falta testar no Foundry)
 - [ ] T10 — Evento
 - [ ] T11 — Teste dos generais
 - [ ] T12 — Fim da batalha
@@ -36,4 +36,6 @@ node testes/estado.test.mjs
 node testes/configuracao.test.mjs
 node testes/inimigos.test.mjs
 node testes/visao.test.mjs
+node testes/conducao.test.mjs
+node testes/posicionamento.test.mjs
 ```

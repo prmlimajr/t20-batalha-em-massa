@@ -139,6 +139,9 @@ export function pendencias(estado) {
 	if (!e.nome) avisos.push("SemNome");
 	e.exercitos.forEach((ex, i) => {
 		if (!ex.general?.uuid && !ex.general?.nome) avisos.push(i === 0 ? "SemGeneralAliado" : "SemGeneralInimigo");
+		else if (ex.general.guerra === null || ex.general.guerra === undefined || ex.general.guerra === "") {
+			avisos.push(i === 0 ? "SemGuerraAliado" : "SemGuerraInimigo");
+		}
 	});
 	if (!e.herois.length) avisos.push("SemHerois");
 	if (!e.tabelaInimigos.length) avisos.push("SemInimigos");

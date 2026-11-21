@@ -1,0 +1,26 @@
+<div class="t20bm-cartao t20bm-cartao-teste">
+	<div class="t20bm-cartao-titulo">
+		<span class="t20bm-cartao-rotulo">{{localize "T20BM.Titulo"}}</span>
+		<span class="t20bm-cartao-nome">{{titulo}}</span>
+		{{#if subtitulo}}<span class="t20bm-cartao-rotulo">{{subtitulo}}</span>{{/if}}
+	</div>
+	{{#if linhas.length}}
+	<ul class="t20bm-teste-linhas">
+		{{#each linhas}}
+		<li class="t20bm-teste-linha {{lado}} {{#if venceu}}venceu{{/if}}">
+			{{#if img}}<img class="t20bm-cartao-retrato pequeno" src="{{img}}" alt="">{{/if}}
+			<span class="t20bm-teste-quem">
+				<strong>{{exercito}}</strong>
+				<small>{{general}}{{#if semFicha}} · {{localize "T20BM.Teste.SemFicha"}}{{/if}}</small>
+				{{#if efeito}}<small class="t20bm-teste-efeito">{{efeito}}</small>{{/if}}
+			</span>
+			<span class="t20bm-teste-conta">{{d20}} {{bonusTxt}}</span>
+			<span class="t20bm-teste-total">{{total}}</span>
+		</li>
+		{{/each}}
+	</ul>
+	{{/if}}
+	{{#if resultado}}<p class="t20bm-teste-resultado">{{resultado}}</p>{{/if}}
+	{{#each notas}}<p class="t20bm-teste-nota">{{this}}</p>{{/each}}
+	{{#if texto}}<p class="t20bm-teste-texto">{{texto}}</p>{{/if}}
+</div>

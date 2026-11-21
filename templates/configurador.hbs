@@ -99,7 +99,7 @@
 				<button type="button" data-action="escolherImagem" data-campo="exercitos.{{i}}.general.img"><i class="fa-solid fa-file-image"></i> {{localize "T20BM.Configurador.ImagemManual"}}</button>
 				<label class="t20bm-guerra">
 					{{localize "T20BM.Configurador.Guerra"}}
-					<input type="number" step="1" name="exercitos.{{i}}.general.guerra" value="{{general.guerra}}" placeholder="{{#if (ne general.guerraFicha null)}}{{general.guerraFicha}}{{/if}}">
+					<input type="number" step="1" name="exercitos.{{i}}.general.guerra" value="{{general.guerra}}" placeholder="0" data-redesenhar>
 				</label>
 			</div>
 			<p class="hint">{{#if (ne general.guerraFicha null)}}{{localize "T20BM.Configurador.GuerraDaFicha" valor=general.guerraFicha}}{{else}}{{localize "T20BM.Configurador.GuerraManual"}}{{/if}}</p>

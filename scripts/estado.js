@@ -37,12 +37,12 @@ export function estadoPadrao(nome = "") {
 			campo: caminho("assets/campodebatalha.png")
 		},
 		opcionais: {
+			preBatalha: false,
 			acoesAbertas: false,
 			posicionamentoAvancado: false,
 			lobosSolitarios: false,
 			limiarVariado: false,
-			danoMedio: false,
-			rolandoPelosGenerais: false
+			danoMedio: false
 		},
 		exercitos: [exercitoPadrao(0), exercitoPadrao(1)],
 		herois: [],
@@ -78,6 +78,7 @@ export function completarEstado(salvo) {
 	estado.exercitos = [0, 1].map((i) => mesclar(padrao.exercitos[i], estado.exercitos?.[i] ?? {}));
 	estado.areas = padrao.areas.map((a, i) => ({ nome: estado.areas?.[i]?.nome || a.nome, posicao: a.posicao }));
 	delete estado.limiar; // v0 guardava o limiar; agora é sempre calculado (regras.limiarVitoria)
+	delete estado.opcionais.rolandoPelosGenerais; // virou o padrão (sorteio de jogador, T11)
 	estado.v = VERSAO_ESTADO;
 	return estado;
 }
