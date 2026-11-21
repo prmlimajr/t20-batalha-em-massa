@@ -566,27 +566,40 @@ button.t20bm-icone {
    Modal da batalha (T7) — tabuleiro do layout.png
    ===================================================================== */
 
+/* O elemento do app é a camada do modal: escurece e bloqueia tudo, menos a barra lateral. */
 #t20bm-modal {
-	border-radius: 14px;
-	overflow: hidden;
-	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: var(--t20bm-livre-direita, 0px);
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	background: rgba(6, 6, 4, 0.72);
+	backdrop-filter: blur(3px);
 	color: var(--bm-texto);
 	font-family: var(--bm-fonte-texto);
-	container-type: inline-size;
-	container-name: tabuleiro;
+	animation: t20bm-surgir 0.25s ease-out;
 }
-#t20bm-modal .window-content,
-#t20bm-modal > section {
-	padding: 0;
-	overflow: hidden;
-	height: 100%;
+@keyframes t20bm-surgir {
+	from { opacity: 0; }
+	to { opacity: 1; }
 }
 .t20bm-tabuleiro {
 	position: relative;
+	width: min(1240px, 100%);
 	height: 100%;
+	border-radius: 14px;
+	overflow: hidden;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(236, 228, 210, 0.08);
 	background-color: var(--bm-fundo);
 	background-size: cover;
 	background-position: center;
+	container-type: inline-size;
+	container-name: tabuleiro;
 }
 .t20bm-tabuleiro::before {
 	content: "";

@@ -5,7 +5,8 @@
  * - Jogadores não fecham: sem moldura nem botão de fechar, e close() recusa (cobre Esc e closeAll).
  * - O mestre fecha só a própria visão ("Fechar para mim") ou encerra para todos ("Encerrar exibição").
  * - O mestre também pode pré-visualizar uma batalha só para ele (modo local), sem exibir para a mesa.
- * - Ocupa a área do canvas e deixa a barra lateral livre (chat e fichas).
+ * - É um modal: uma camada escura cobre a tela (bloqueia o mapa) com o tabuleiro centralizado;
+ *   a barra lateral fica fora da camada, para chat e fichas continuarem acessíveis.
  */
 import { L, caminho } from "../modulo.js";
 import { lerBatalha, idExibida, exibirParaTodos, encerrarExibicao } from "../armazenamento.js";
@@ -16,8 +17,6 @@ import { ConfiguradorBatalha } from "./configurador.js";
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 const INTERVALO_CARROSSEL = 5000;
-const MARGEM = 12;
-const LARGURA_MAXIMA = 1240;
 
 export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 	static #atual = null;
@@ -58,14 +57,14 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 		this.idBatalha = idBatalha;
 		this.local = false;
 		this.timers = [];
-		this.aoRedimensionar = foundry.utils.debounce(() => this.setPosition(posicaoNoCanvas()), 100);
+		this.aoRedimensionar = foundry.utils.debounce(() => this.#ajustarAreaLivre(), 100);
 	}
 
 	static DEFAULT_OPTIONS = {
 		id: "t20bm-modal",
 		classes: ["t20-batalha", "t20bm-modal"],
 		tag: "div",
-		window: { frame: false, positioned: true, minimizable: false, resizable: false },
+		window: { frame: false, positioned: false, minimizable: false, resizable: false },
 		actions: {
 			fecharLocal: ModalBatalha.#fecharLocal,
 			encerrar: ModalBatalha.#encerrar,
@@ -78,12 +77,6 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 	static PARTS = {
 		tabuleiro: { template: caminho("templates/modal.hbs"), scrollable: [""] }
 	};
-
-	_initializeApplicationOptions(options) {
-		const opcoes = super._initializeApplicationOptions(options);
-		opcoes.position = { ...opcoes.position, ...posicaoNoCanvas() };
-		return opcoes;
-	}
 
 	/* ---------------- Dados ---------------- */
 
@@ -114,6 +107,7 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 
 	_onRender(context, options) {
 		super._onRender(context, options);
+		this.#ajustarAreaLivre();
 		this.#pararCarrosseis();
 		for (const carrossel of this.element.querySelectorAll(".t20bm-carrossel")) {
 			const itens = [...carrossel.querySelectorAll(".t20bm-carrossel-item")];
@@ -125,6 +119,11 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 				itens[i].classList.add("ativo");
 			}, INTERVALO_CARROSSEL));
 		}
+	}
+
+	/** A camada vai da borda esquerda até a barra lateral (que fica livre). */
+	#ajustarAreaLivre() {
+		this.element?.style.setProperty("--t20bm-livre-direita", `${larguraDaBarraLateral()}px`);
 	}
 
 	#pararCarrosseis() {
@@ -170,16 +169,17 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 	}
 }
 
-/** Área do canvas: da margem esquerda até a barra lateral, a altura toda; largura limitada e centralizada. */
-function posicaoNoCanvas() {
-	const sidebar = document.getElementById("sidebar");
-	const direita = sidebar ? sidebar.getBoundingClientRect().left : window.innerWidth;
-	const disponivel = Math.max(360, direita - 2 * MARGEM);
-	const width = Math.min(disponivel, LARGURA_MAXIMA);
-	return {
-		left: Math.round(MARGEM + (disponivel - width) / 2),
-		top: MARGEM,
-		width: Math.round(width),
-		height: Math.round(window.innerHeight - 2 * MARGEM)
-	};
+/**
+ * Largura ocupada pela barra lateral à direita (chat, atores...), medida na tela.
+ * Sem barra visível, 0: a camada cobre a tela toda.
+ */
+function larguraDaBarraLateral() {
+	let largura = 0;
+	for (const el of document.querySelectorAll("#sidebar, #ui-right")) {
+		const r = el.getBoundingClientRect();
+		if (r.width > 0 && r.height > 0 && r.left > window.innerWidth / 2) {
+			largura = Math.max(largura, Math.ceil(window.innerWidth - r.left));
+		}
+	}
+	return largura;
 }
