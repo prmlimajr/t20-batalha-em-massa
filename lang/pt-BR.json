@@ -2,18 +2,30 @@
 	"T20BM": {
 		"Titulo": "Batalha em Massa",
 		"SistemaIncompativel": "T20 — Batalha em Massa funciona apenas com o sistema Tormenta20.",
-		"Cena": {
-			"Marcar": "Cena de batalha em massa",
-			"MarcarDica": "Grava na hora. Abre o painel de batalha em massa para toda a mesa nesta cena. Desmarcar não apaga a configuração da batalha.",
-			"Configurar": "Configurar batalha",
+		"SoMestre": "Só o mestre pode gerenciar as batalhas.",
+		"Gerenciador": {
+			"Titulo": "Batalhas em Massa",
+			"Abrir": "Abrir gerenciador",
+			"Dica": "Crie, configure e exiba para a mesa as batalhas em massa deste mundo.",
+			"Vazio": "Nenhuma batalha criada ainda.",
+			"SemNome": "Batalha sem nome",
+			"Nova": "Nova batalha",
+			"Nome": "Nome da batalha",
+			"Salvar": "Salvar",
+			"Configurar": "Configurar",
 			"ConfiguradorEmBreve": "O configurador da batalha ainda não foi implementado (T4).",
-			"FalhaGravar": "Não foi possível marcar a cena como batalha. Veja o console (F12)."
-		},
-		"Config": {
-			"abrirAutomaticamente": {
-				"Nome": "Abrir a batalha automaticamente",
-				"Dica": "Abre o painel da batalha para toda a mesa quando uma cena de batalha é ativada."
-			}
+			"Renomear": "Renomear",
+			"Duplicar": "Duplicar (do início, mesma configuração)",
+			"SufixoCopia": "(cópia)",
+			"Reiniciar": "Reiniciar",
+			"ReiniciarConfirma": "Reiniciar {nome}? A configuração fica; placar, turno, posições e histórico voltam ao início.",
+			"Apagar": "Apagar",
+			"ApagarConfirma": "Apagar {nome}? Não dá para desfazer.",
+			"Exibir": "Exibir para todos",
+			"Encerrar": "Encerrar exibição",
+			"AvisoExibida": "Há uma batalha em exibição para a mesa.",
+			"NaoIniciada": "não iniciada",
+			"Turno": "turno {n}"
 		}
 	}
 }

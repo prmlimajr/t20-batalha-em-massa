@@ -1,31 +1,55 @@
 /**
  * T20 — Batalha em Massa
  *
- * Batalhas em massa de Tormenta20 (Guerra Artoniana, Apêndice B) numa cena marcada como
- * "cena de batalha": um modal com o tabuleiro aberto para toda a mesa, que só o mestre fecha.
+ * Batalhas em massa de Tormenta20 (Guerra Artoniana, Apêndice B), independentes de cena:
+ * o mestre cria e configura batalhas num gerenciador e exibe uma delas para toda a mesa
+ * num modal que só o mestre fecha.
  *
  * Spec: SDD/t20-batalha-em-massa/feature/spec.md
  */
-import { MODULE_ID, SOCKET, log } from "./modulo.js";
-import { registrarCena } from "./cena.js";
+import { MODULE_ID, SOCKET, L, log } from "./modulo.js";
+import * as armazenamento from "./armazenamento.js";
+import { GerenciadorBatalhas, MenuGerenciador } from "./apps/gerenciador.js";
 
 /* ---------------- Configurações ---------------- */
 
 function registrarConfiguracoes() {
-	// As opções de cada batalha ficam no flag da cena (T2/T6); aqui só o que vale para o mundo.
-	game.settings.register(MODULE_ID, "abrirAutomaticamente", {
-		name: "T20BM.Config.abrirAutomaticamente.Nome",
-		hint: "T20BM.Config.abrirAutomaticamente.Dica",
-		scope: "world",
-		config: true,
-		type: Boolean,
-		default: true
+	armazenamento.registrarArmazenamento();
+	game.settings.registerMenu(MODULE_ID, "gerenciador", {
+		name: "T20BM.Gerenciador.Titulo",
+		label: "T20BM.Gerenciador.Abrir",
+		hint: "T20BM.Gerenciador.Dica",
+		icon: "fa-solid fa-chess-rook",
+		type: MenuGerenciador,
+		restricted: true
 	});
+}
+
+/* ---------------- Botão nos controles da cena ---------------- */
+
+function adicionarBotaoControles(controles) {
+	if (!game.user.isGM) return;
+	try {
+		// v13+: controles é um objeto { tokens: { tools: {...} }, ... }
+		const tokens = controles.tokens ?? controles.token;
+		if (!tokens?.tools) return;
+		tokens.tools.t20bmGerenciador = {
+			name: "t20bmGerenciador",
+			title: L("Gerenciador.Titulo"),
+			icon: "fa-solid fa-chess-rook",
+			order: Object.keys(tokens.tools).length,
+			button: true,
+			visible: true,
+			onChange: () => GerenciadorBatalhas.abrir()
+		};
+	} catch (erro) {
+		console.warn(`${MODULE_ID} | não foi possível adicionar o botão aos controles`, erro);
+	}
 }
 
 /* ---------------- Socket ---------------- */
 
-/** Tratadores das mensagens de socket, por tipo. Preenchidos nas próximas tasks (T7, T9, T10). */
+/** Tratadores das mensagens de socket, por tipo. Preenchidos nas próximas tasks (T9, T10). */
 const TRATADORES = {};
 
 function registrarSocket() {
@@ -40,15 +64,24 @@ function registrarSocket() {
 
 Hooks.once("init", () => {
 	registrarConfiguracoes();
-	registrarCena();
+	Hooks.on("getSceneControlButtons", adicionarBotaoControles);
+	Hooks.on(armazenamento.HOOK_BATALHAS, () => GerenciadorBatalhas.atualizar());
+	Hooks.on(armazenamento.HOOK_EXIBIDA, (id) => {
+		GerenciadorBatalhas.atualizar();
+		log("batalha exibida:", id || "(nenhuma)"); // T7: abrir/fechar o modal para todos
+	});
 	log("inicializado");
 });
 
 Hooks.once("ready", () => {
 	if (game.system.id !== "tormenta20") {
-		ui.notifications.warn(game.i18n.localize("T20BM.SistemaIncompativel"));
+		ui.notifications.warn(L("SistemaIncompativel"));
 		return;
 	}
 	registrarSocket();
+	game.modules.get(MODULE_ID).api = {
+		abrirGerenciador: () => GerenciadorBatalhas.abrir(),
+		...armazenamento
+	};
 	log("pronto");
 });

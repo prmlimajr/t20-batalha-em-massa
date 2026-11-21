@@ -1,0 +1,41 @@
+<section class="t20bm-gerenciador-corpo">
+	{{#if algumaExibida}}
+	<div class="t20bm-aviso-exibida">
+		<i class="fa-solid fa-eye"></i> {{localize "T20BM.Gerenciador.AvisoExibida"}}
+		<button type="button" data-action="encerrar"><i class="fa-solid fa-eye-slash"></i> {{localize "T20BM.Gerenciador.Encerrar"}}</button>
+	</div>
+	{{/if}}
+
+	{{#if vazia}}
+	<p class="t20bm-vazio">{{localize "T20BM.Gerenciador.Vazio"}}</p>
+	{{else}}
+	<ol class="t20bm-lista">
+		{{#each batalhas}}
+		<li class="t20bm-item {{#if exibida}}exibida{{/if}}" data-id="{{id}}">
+			<div class="t20bm-item-info">
+				<span class="t20bm-item-tamanho">{{tamanho}}</span>
+				<strong class="t20bm-item-nome">{{nome}}</strong>
+				{{#if local}}<span class="t20bm-item-local">{{local}}</span>{{/if}}
+				<span class="t20bm-item-detalhe">{{exercitos}} · {{placar}} · {{andamento}}</span>
+			</div>
+			<div class="t20bm-item-acoes">
+				{{#if exibida}}
+				<button type="button" data-action="encerrar" class="ativo" data-tooltip="T20BM.Gerenciador.Encerrar"><i class="fa-solid fa-eye-slash"></i></button>
+				{{else}}
+				<button type="button" data-action="exibir" data-tooltip="T20BM.Gerenciador.Exibir"><i class="fa-solid fa-eye"></i></button>
+				{{/if}}
+				<button type="button" data-action="configurar" data-tooltip="T20BM.Gerenciador.Configurar"><i class="fa-solid fa-gear"></i></button>
+				<button type="button" data-action="renomear" data-tooltip="T20BM.Gerenciador.Renomear"><i class="fa-solid fa-pen"></i></button>
+				<button type="button" data-action="duplicar" data-tooltip="T20BM.Gerenciador.Duplicar"><i class="fa-solid fa-copy"></i></button>
+				<button type="button" data-action="reiniciar" data-tooltip="T20BM.Gerenciador.Reiniciar"><i class="fa-solid fa-rotate-left"></i></button>
+				<button type="button" data-action="apagar" data-tooltip="T20BM.Gerenciador.Apagar"><i class="fa-solid fa-trash"></i></button>
+			</div>
+		</li>
+		{{/each}}
+	</ol>
+	{{/if}}
+
+	<footer class="t20bm-rodape">
+		<button type="button" data-action="criar"><i class="fa-solid fa-plus"></i> {{localize "T20BM.Gerenciador.Nova"}}</button>
+	</footer>
+</section>

@@ -1,19 +1,18 @@
 /**
- * Estado da batalha, guardado na própria cena:
- *   scene.flags["t20-batalha-em-massa"].ativa   → a cena é uma cena de batalha (checkbox da configuração da cena)
- *   scene.flags["t20-batalha-em-massa"].estado  → tudo o resto (objeto versionado, schema abaixo)
+ * Estado de uma batalha e operações puras sobre a coleção de batalhas (sem Foundry: testável em Node).
  *
- * Desmarcar a cena só muda `ativa`: o estado fica guardado e volta se a cena for marcada de novo.
- * Só o mestre grava; jogadores pedem por socket (T9/T10).
+ * As batalhas não dependem de cena. Ficam numa configuração do mundo (ver armazenamento.js):
+ *   batalhas = { [id]: estado }   exibida = id | ""
  */
-import { MODULE_ID, caminho } from "./modulo.js";
+import { caminho } from "./modulo.js";
 
 export const VERSAO_ESTADO = 1;
-// Etapas e posições (com modificadores) ficam em constantes.js (T3). Aqui: etapa "pre" = antes do Turno 1.
+// Etapas e posições (com modificadores) ficam em constantes.js (T3). Etapa "pre" = antes do Turno 1.
 
 function exercitoPadrao(lado) {
 	return {
 		nome: lado === 0 ? "Seu exército" : "Exército inimigo",
+		pontosIniciais: 0,
 		pontos: 0,
 		general: { uuid: null, nome: "", img: null, guerra: null },
 		substituto: { uuid: null, nome: "", img: null },
@@ -23,15 +22,14 @@ function exercitoPadrao(lado) {
 	};
 }
 
-/** Estado inicial de uma cena recém-marcada como batalha. */
-export function estadoPadrao() {
+/** Estado inicial de uma batalha nova. */
+export function estadoPadrao(nome = "") {
 	return {
 		v: VERSAO_ESTADO,
-		aberto: false,
-		iniciada: false,
-		nome: "",
+		nome,
 		local: "",
 		tamanho: "media",
+		iniciada: false,
 		turno: 0,
 		etapa: "pre",
 		limiar: 10,
@@ -66,22 +64,12 @@ export function novaRodada() {
 	return { evento: null, danoTotal: 0, bonusEvento: 0, testesPericia: 0, movidos: [], resultadoGenerais: null };
 }
 
-/* ---------------- Leitura ---------------- */
-
-export function ehCenaBatalha(scene) {
-	return !!scene?.getFlag(MODULE_ID, "ativa");
-}
+/* ---------------- Completar / migrar ---------------- */
 
 /**
- * Estado da cena, completado com os padrões (campos novos de versões futuras aparecem sem migração manual).
- * Devolve uma cópia: alterar o retorno não altera a cena.
+ * Junta o estado salvo aos padrões e migra versões antigas (campos novos aparecem sem migração manual).
+ * Devolve uma cópia: alterar o retorno não altera o salvo.
  */
-export function lerEstado(scene) {
-	const salvo = scene?.getFlag(MODULE_ID, "estado");
-	return completarEstado(salvo);
-}
-
-/** Puro (sem Foundry): junta o estado salvo aos padrões e migra versões antigas. */
 export function completarEstado(salvo) {
 	const padrao = estadoPadrao();
 	if (!salvo || typeof salvo !== "object") return padrao;
@@ -103,18 +91,48 @@ function mesclar(padrao, salvo) {
 
 const eObjeto = (x) => x !== null && typeof x === "object" && !Array.isArray(x);
 
-/* ---------------- Escrita (só GM) ---------------- */
+/* ---------------- Ciclo de vida de uma batalha ---------------- */
 
-export async function gravarEstado(scene, estado) {
-	if (!game.user.isGM) throw new Error(`${MODULE_ID} | só o mestre grava o estado da batalha`);
-	return scene.update({ [`flags.${MODULE_ID}.estado`]: estado });
+/** Mantém toda a configuração e volta a batalha ao início (placar inicial, turno 0, heróis na Retaguarda). */
+export function reiniciarBatalha(estado) {
+	const e = completarEstado(estado);
+	e.iniciada = false;
+	e.turno = 0;
+	e.etapa = "pre";
+	e.grupoArea = 1;
+	e.herois = e.herois.map((h) => ({ ...h, area: 1 }));
+	for (const ex of e.exercitos) {
+		ex.pontos = ex.pontosIniciais;
+		ex.estandartes = ex.estandartes.map((s) => ({ ...s, carregadoPor: null }));
+	}
+	e.rodada = novaRodada();
+	e.historico = [];
+	return e;
 }
 
-/**
- * Usado em preCreateScene/preUpdateScene: quando a cena passa a ser de batalha e ainda não tem estado,
- * acrescenta o estado padrão às mesmas alterações (uma única gravação).
- * Puro: recebe o valor de `ativa` pedido e se já existe estado; devolve o estado a gravar ou null.
- */
-export function estadoAoMarcar(ativaPedida, jaTemEstado) {
-	return ativaPedida === true && !jaTemEstado ? estadoPadrao() : null;
+/* ---------------- Coleção de batalhas (puro: recebe e devolve cópias) ---------------- */
+
+export function criarNaColecao(colecao, id, nome) {
+	return { ...colecao, [id]: estadoPadrao(nome) };
+}
+
+/** Cópia com a mesma configuração, do início, com " (cópia)" no nome. */
+export function duplicarNaColecao(colecao, idOrigem, idNovo, sufixo = " (cópia)") {
+	const origem = colecao[idOrigem];
+	if (!origem) return colecao;
+	const copia = reiniciarBatalha(origem);
+	copia.nome = `${copia.nome}${sufixo}`;
+	return { ...colecao, [idNovo]: copia };
+}
+
+export function removerDaColecao(colecao, id) {
+	const { [id]: _removida, ...resto } = colecao;
+	return resto;
+}
+
+/** Lista ordenada por nome, para exibir no gerenciador. */
+export function listarColecao(colecao) {
+	return Object.entries(colecao ?? {})
+		.map(([id, salvo]) => ({ id, ...completarEstado(salvo) }))
+		.sort((a, b) => (a.nome || "").localeCompare(b.nome || "", "pt-BR"));
 }

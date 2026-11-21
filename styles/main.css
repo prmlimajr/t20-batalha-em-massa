@@ -34,26 +34,97 @@
 	--bm-retrato-substituto: 36px;
 
 	--bm-raio: 10px;
-
-	color: var(--bm-texto);
-	font-family: var(--bm-fonte-texto);
+	/* Cor e fonte do texto ficam no modal (T7): o gerenciador usa o tema do Foundry. */
 }
 
-/* ---------------- Configuração da cena (T2) ---------------- */
+/* ---------------- Gerenciador de batalhas (T2) ---------------- */
 
-.t20bm-config-cena {
-	border: 1px solid var(--color-border, #7a7971);
+.t20bm-gerenciador .window-content {
+	padding: 0.75rem;
+}
+.t20bm-gerenciador-corpo {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+.t20bm-aviso-exibida {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.4rem 0.6rem;
+	border: 1px solid var(--bm-ouro);
 	border-radius: 6px;
-	margin: 0.5rem 0;
+	background: var(--bm-ouro-claro);
 }
-.t20bm-config-cena legend {
-	font-weight: bold;
-	padding: 0 0.25rem;
+.t20bm-aviso-exibida button {
+	margin-left: auto;
+	width: auto;
 }
-.t20bm-config-cena .t20bm-configurar {
+.t20bm-vazio {
+	text-align: center;
+	opacity: 0.7;
+	margin: 1rem 0;
+}
+.t20bm-lista {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	max-height: 60vh;
+	overflow-y: auto;
+}
+.t20bm-item {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.5rem 0.6rem;
+	border: 1px solid var(--color-border, rgba(127, 127, 127, 0.4));
+	border-radius: 6px;
+}
+.t20bm-item.exibida {
+	border-color: var(--bm-ouro);
+	box-shadow: 0 0 0 1px var(--bm-ouro) inset;
+}
+.t20bm-item-info {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	flex: 1;
+}
+.t20bm-item-tamanho {
+	font-size: 0.7rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	opacity: 0.7;
+}
+.t20bm-item-nome {
+	font-family: var(--bm-fonte-titulo);
+	font-size: 1.15rem;
+}
+.t20bm-item-local,
+.t20bm-item-detalhe {
+	font-size: 0.8rem;
+	opacity: 0.75;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.t20bm-item-acoes {
+	display: flex;
+	gap: 0.2rem;
+	flex: none;
+}
+.t20bm-item-acoes button {
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	line-height: 1;
+}
+.t20bm-item-acoes button.ativo {
+	color: var(--bm-ouro);
+}
+.t20bm-rodape button {
 	width: 100%;
-}
-.t20bm-icone-batalha {
-	margin-right: 0.35em;
-	opacity: 0.8;
 }
