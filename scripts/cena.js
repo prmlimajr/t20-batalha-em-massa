@@ -2,11 +2,11 @@
  * T2 — Marcar uma cena como cena de batalha.
  *
  * - Checkbox "Cena de batalha em massa" + botão "Configurar batalha" na aba Básico da configuração da cena.
- * - O checkbox é um campo normal do formulário (`flags.<id>.ativa`): grava ao salvar a cena.
+ * - O checkbox grava `flags.<id>.ativa` na hora em que é clicado (não espera o "Salvar" da cena).
  * - Ao marcar pela primeira vez, preUpdateScene/preCreateScene acrescentam o estado padrão na mesma gravação.
  * - Cenas de batalha ganham um ícone no diretório de cenas.
  */
-import { MODULE_ID, L } from "./modulo.js";
+import { MODULE_ID, L, log } from "./modulo.js";
 import { ehCenaBatalha, estadoAoMarcar } from "./estado.js";
 
 const CAMPO = `flags.${MODULE_ID}.ativa`;
@@ -16,6 +16,7 @@ const CAMPO = `flags.${MODULE_ID}.ativa`;
 function injetarNaConfigCena(app, html) {
 	const raiz = html instanceof HTMLElement ? html : html?.[0];
 	const scene = app.document ?? app.object;
+	log("renderSceneConfig", { app: app.constructor?.name, raiz: !!raiz, scene: scene?.uuid, gm: game.user.isGM });
 	if (!raiz || !scene || !game.user.isGM) return;
 	if (raiz.querySelector(".t20bm-config-cena")) return; // re-render de partes: não duplicar
 
@@ -27,7 +28,7 @@ function injetarNaConfigCena(app, html) {
 		<div class="form-group">
 			<label for="${app.id}-t20bm-ativa">${L("Cena.Marcar")}</label>
 			<div class="form-fields">
-				<input type="checkbox" id="${app.id}-t20bm-ativa" name="${CAMPO}" ${ativa ? "checked" : ""}>
+				<input type="checkbox" id="${app.id}-t20bm-ativa" ${ativa ? "checked" : ""}>
 			</div>
 			<p class="hint">${L("Cena.MarcarDica")}</p>
 		</div>
@@ -39,21 +40,30 @@ function injetarNaConfigCena(app, html) {
 
 	const checkbox = bloco.querySelector("input");
 	const botao = bloco.querySelector(".t20bm-configurar");
-	checkbox.addEventListener("change", () => {
-		botao.disabled = !checkbox.checked;
-		botao.title = checkbox.checked && !ehCenaBatalha(scene) ? L("Cena.SalveAntes") : "";
+	// Grava na hora (não depende do "Salvar" da cena, cujo processamento do formulário muda entre versões).
+	checkbox.addEventListener("change", async () => {
+		checkbox.disabled = true;
+		try {
+			await scene.update({ [CAMPO]: checkbox.checked }, { render: false });
+			log("cena de batalha", checkbox.checked, scene.flags[MODULE_ID]);
+		} catch (erro) {
+			console.error(`${MODULE_ID} | falha ao marcar a cena`, erro);
+			ui.notifications.error(L("Cena.FalhaGravar"));
+			checkbox.checked = ehCenaBatalha(scene);
+		} finally {
+			checkbox.disabled = false;
+			botao.disabled = !checkbox.checked;
+		}
 	});
-	botao.addEventListener("click", () => {
-		if (!ehCenaBatalha(scene)) return ui.notifications.info(L("Cena.SalveAntes"));
-		abrirConfigurador(scene);
-	});
+	botao.addEventListener("click", () => abrirConfigurador(scene));
 
 	// Aba Básico (v13+: .tab[data-tab="basics"]); se a estrutura mudar, cai no fim do formulário.
 	const destino = raiz.querySelector('.tab[data-tab="basics"]')
 		?? raiz.querySelector("form")
 		?? raiz;
 	const rodape = destino.querySelector(":scope > footer, :scope > .form-footer");
-	destino.insertBefore(bloco, rodape ?? null);
+	destino.insertBefore(bloco, rodape?.parentElement === destino ? rodape : null);
+	log("bloco inserido em", destino.tagName, destino.className || destino.dataset?.tab);
 	app.setPosition?.({ height: "auto" });
 }
 

@@ -4,10 +4,10 @@
 		"SistemaIncompativel": "T20 — Batalha em Massa funciona apenas com o sistema Tormenta20.",
 		"Cena": {
 			"Marcar": "Cena de batalha em massa",
-			"MarcarDica": "Abre o painel de batalha em massa para toda a mesa nesta cena. Desmarcar não apaga a configuração da batalha.",
+			"MarcarDica": "Grava na hora. Abre o painel de batalha em massa para toda a mesa nesta cena. Desmarcar não apaga a configuração da batalha.",
 			"Configurar": "Configurar batalha",
-			"SalveAntes": "Salve a cena com a opção marcada para configurar a batalha.",
-			"ConfiguradorEmBreve": "O configurador da batalha ainda não foi implementado (T4)."
+			"ConfiguradorEmBreve": "O configurador da batalha ainda não foi implementado (T4).",
+			"FalhaGravar": "Não foi possível marcar a cena como batalha. Veja o console (F12)."
 		},
 		"Config": {
 			"abrirAutomaticamente": {
