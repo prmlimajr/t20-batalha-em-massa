@@ -8,9 +8,19 @@
 import { MODIFICADORES_GUERRA, AREA_INICIAL, OPCIONAIS } from "./constantes.js";
 import { completarEstado } from "./estado.js";
 
-/** Retrato guardado na batalha: referência ao ator + nome e imagem de quando foi escolhido (fallback). */
+/**
+ * Imagem do token do ator (protótipo). Sem token, ou com token "curinga" (caminho com * para imagens
+ * aleatórias, que não é um arquivo), usa a imagem do ator.
+ */
+export function imagemDoAtor(ator) {
+	const token = ator?.prototypeToken?.texture?.src;
+	if (token && !token.includes("*")) return token;
+	return ator?.img ?? null;
+}
+
+/** Retrato guardado na batalha: referência ao ator + nome e imagem do token de quando foi escolhido (fallback). */
 export function retratoDeAtor(ator) {
-	return { uuid: ator.uuid ?? null, nome: ator.name ?? ator.nome ?? "", img: ator.img ?? null };
+	return { uuid: ator.uuid ?? null, nome: ator.name ?? ator.nome ?? "", img: imagemDoAtor(ator) };
 }
 
 /* ---------------- Modificadores de Guerra ---------------- */

@@ -7,6 +7,7 @@
 import { L, caminho } from "../modulo.js";
 import { TAMANHOS } from "../constantes.js";
 import { ConfiguradorBatalha } from "./configurador.js";
+import { ModalBatalha } from "./modal-batalha.js";
 import {
 	listarBatalhas, idExibida, lerBatalha, criarBatalha, duplicarBatalha, atualizarBatalha, reiniciar,
 	apagarBatalha, exibirParaTodos, encerrarExibicao
@@ -42,7 +43,8 @@ export class GerenciadorBatalhas extends HandlebarsApplicationMixin(ApplicationV
 			reiniciar: GerenciadorBatalhas.#reiniciar,
 			apagar: GerenciadorBatalhas.#apagar,
 			exibir: GerenciadorBatalhas.#exibir,
-			encerrar: GerenciadorBatalhas.#encerrar
+			encerrar: GerenciadorBatalhas.#encerrar,
+			visualizar: GerenciadorBatalhas.#visualizar
 		}
 	};
 
@@ -107,6 +109,12 @@ export class GerenciadorBatalhas extends HandlebarsApplicationMixin(ApplicationV
 
 	static async #encerrar() {
 		await encerrarExibicao();
+	}
+
+	/** Abre o tabuleiro só para o mestre: pré-visualização, ou reabrir a batalha exibida depois de fechar para si. */
+	static #visualizar(_evento, alvo) {
+		const id = idDe(alvo);
+		ModalBatalha.abrir(id, { local: idExibida() !== id });
 	}
 }
 

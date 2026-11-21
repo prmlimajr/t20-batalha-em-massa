@@ -49,10 +49,11 @@ export function estadoPadrao(nome = "") {
 		grupoArea: 1,
 		tabelaInimigos: [],
 		areas: [
-			{ posicao: "acampamento", nome: "Acampamento", subtitulo: "Acampamento" },
-			{ posicao: "retaguarda", nome: "Retaguarda", subtitulo: "Retaguarda" },
-			{ posicao: "front", nome: "Front", subtitulo: "Front" },
-			{ posicao: "atras", nome: "Atrás das linhas inimigas", subtitulo: "Atrás das linhas inimigas" }
+			// O subtítulo de cada área é fixo: o nome da posição (constantes.POSICOES).
+			{ posicao: "acampamento", nome: "Acampamento" },
+			{ posicao: "retaguarda", nome: "Retaguarda" },
+			{ posicao: "front", nome: "Front" },
+			{ posicao: "atras", nome: "Atrás das linhas inimigas" }
 		],
 		rodada: novaRodada(),
 		historico: []
@@ -75,7 +76,7 @@ export function completarEstado(salvo) {
 	const estado = mesclar(padrao, structuredClone(salvo));
 	// Listas com tamanho fixo: garantir 2 exércitos e 4 áreas mesmo se o salvo estiver incompleto.
 	estado.exercitos = [0, 1].map((i) => mesclar(padrao.exercitos[i], estado.exercitos?.[i] ?? {}));
-	estado.areas = padrao.areas.map((a, i) => ({ ...a, ...(estado.areas?.[i] ?? {}), posicao: a.posicao }));
+	estado.areas = padrao.areas.map((a, i) => ({ nome: estado.areas?.[i]?.nome || a.nome, posicao: a.posicao }));
 	delete estado.limiar; // v0 guardava o limiar; agora é sempre calculado (regras.limiarVitoria)
 	estado.v = VERSAO_ESTADO;
 	return estado;

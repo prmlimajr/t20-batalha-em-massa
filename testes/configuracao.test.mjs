@@ -124,3 +124,18 @@ assert.equal(aplicarConfiguracao(antes, rascAntes).opcionais.lobosSolitarios, tr
 assert.equal("limiar" in completarEstado({ limiar: 7 }), false);
 
 console.log("opcionais: ok");
+
+/* Imagem do token ao arrastar atores */
+import { imagemDoAtor } from "../scripts/configuracao.js";
+assert.equal(imagemDoAtor({ img: "retrato.png", prototypeToken: { texture: { src: "token.webp" } } }), "token.webp");
+assert.equal(imagemDoAtor({ img: "retrato.png", prototypeToken: { texture: { src: "tokens/orc-*.webp" } } }), "retrato.png", "curinga usa o retrato");
+assert.equal(imagemDoAtor({ img: "retrato.png" }), "retrato.png", "sem protótipo (índice de compêndio)");
+assert.equal(imagemDoAtor(null), null);
+assert.equal(retratoDeAtor({ uuid: "Actor.a", name: "A", img: "r.png", prototypeToken: { texture: { src: "t.png" } } }).img, "t.png");
+
+/* Subtítulos das áreas são fixos */
+const comSub = completarEstado({ areas: [{ nome: "Topo da colina", subtitulo: "Outro" }, { nome: "" }] });
+assert.deepEqual(comSub.areas[0], { nome: "Topo da colina", posicao: "acampamento" });
+assert.equal(comSub.areas[1].nome, "Retaguarda", "nome vazio volta ao padrão");
+
+console.log("token e áreas: ok");

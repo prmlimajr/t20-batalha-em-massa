@@ -2,6 +2,14 @@
    Paleta e medidas tiradas de SDD/t20-batalha-em-massa/fontes/layout.png.
    Tudo fica sob .t20-batalha para não vazar para o resto do Foundry. */
 
+/* Fonte dos títulos: Tormenta 20, distribuída com o módulo (fonts/Tormenta20.ttf; uso pessoal).
+   Se o arquivo faltar, usa a fonte instalada no computador; sem ela, Georgia/serif. */
+@font-face {
+	font-family: "T20BM Tormenta";
+	src: url("../fonts/Tormenta20.ttf") format("truetype"), local("Tormenta20"), local("Tormenta 20");
+	font-display: swap;
+}
+
 .t20-batalha {
 	/* Superfícies */
 	--bm-fundo: #15160f;
@@ -23,7 +31,7 @@
 	--bm-linha: rgba(236, 228, 210, 0.16);
 
 	/* Tipografia */
-	--bm-fonte-titulo: "Cormorant Garamond", "Cormorant", Georgia, serif;
+	--bm-fonte-titulo: "T20BM Tormenta", "Tormenta20", "Tormenta 20", Georgia, serif;
 	--bm-fonte-texto: "Inter", "Signika", system-ui, sans-serif;
 
 	/* Retratos (hierarquia do layout) */
@@ -413,52 +421,111 @@ button.t20bm-icone {
 
 /* ---------------- Cartões de chat ---------------- */
 
-.t20bm-cartao header {
+.t20bm-cartao {
 	display: flex;
-	align-items: center;
-	gap: 0.5rem;
+	flex-direction: column;
+	gap: 0.45rem;
 }
-.t20bm-cartao h3 {
-	margin: 0;
-	border: none;
+.t20bm-cartao-topo {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	align-items: center;
+	gap: 0.55rem;
 }
 .t20bm-cartao-retrato {
-	width: 3rem;
-	height: 3rem;
+	width: 48px;
+	height: 48px;
 	border-radius: 50%;
 	object-fit: cover;
-	border: none;
-	flex: none;
+	border: 1px solid var(--color-border, rgba(127, 127, 127, 0.5));
+}
+.t20bm-cartao-titulo {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	gap: 0.1rem;
 }
 .t20bm-cartao-rotulo {
-	font-size: 0.7rem;
+	font-size: 0.68rem;
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
-	opacity: 0.75;
+	opacity: 0.7;
+	line-height: 1.2;
+}
+.t20bm-cartao-nome {
+	font-size: 1.05rem;
+	font-weight: bold;
+	line-height: 1.25;
+	overflow-wrap: anywhere;
+}
+/* Link enriquecido (@UUID): sem a caixa padrão, no tamanho do nome. */
+.t20bm-cartao-nome a.content-link {
+	background: none;
+	border: none;
+	padding: 0;
+	font-size: inherit;
+	white-space: normal;
+}
+.t20bm-cartao-nome a.content-link i {
+	font-size: 0.8em;
+	opacity: 0.6;
 }
 .t20bm-cartao-stats {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.25rem 0.75rem;
-	margin: 0.4rem 0;
-}
-.t20bm-cartao-stats div {
-	display: flex;
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
 	gap: 0.25rem;
 }
-.t20bm-cartao-stats dt {
-	font-weight: bold;
+.t20bm-cartao-stats > div {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 0.2rem 0.1rem;
+	border: 1px solid var(--color-border, rgba(127, 127, 127, 0.35));
+	border-radius: 4px;
+	line-height: 1.2;
 }
-.t20bm-cartao-stats dd {
-	margin: 0;
+.t20bm-cartao-stats span {
+	font-size: 0.65rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	opacity: 0.7;
+}
+.t20bm-cartao-stats strong {
+	font-size: 0.95rem;
 }
 .t20bm-cartao-ataques {
-	margin: 0.25rem 0 0;
+	margin: 0;
 	padding-left: 1.1rem;
+	font-size: 0.9em;
+}
+.t20bm-cartao .t20bm-alerta {
+	margin: 0;
 }
 .t20bm-dano-medio {
 	font-size: 0.85em;
 	opacity: 0.85;
+}
+
+/* ---------------- Prévia das imagens (configurador) ---------------- */
+
+.t20bm-campo-imagem input {
+	flex: 1;
+	min-width: 0;
+}
+.t20bm-previa {
+	display: block;
+	width: 100%;
+	margin: 0.3rem 0 0.75rem;
+	border: 1px solid var(--color-border, rgba(127, 127, 127, 0.4));
+	border-radius: 6px;
+	object-fit: cover;
+	background: rgba(0, 0, 0, 0.3);
+}
+.t20bm-previa.fundo {
+	max-height: 220px;
+}
+.t20bm-previa.campo {
+	aspect-ratio: 2235 / 520;
 }
 
 /* ---------------- Regras opcionais (T6) ---------------- */
@@ -493,4 +560,474 @@ button.t20bm-icone {
 .t20bm-opcional-texto {
 	font-size: 0.85rem;
 	opacity: 0.85;
+}
+
+/* =====================================================================
+   Modal da batalha (T7) — tabuleiro do layout.png
+   ===================================================================== */
+
+#t20bm-modal {
+	border-radius: 14px;
+	overflow: hidden;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+	color: var(--bm-texto);
+	font-family: var(--bm-fonte-texto);
+	container-type: inline-size;
+	container-name: tabuleiro;
+}
+#t20bm-modal .window-content,
+#t20bm-modal > section {
+	padding: 0;
+	overflow: hidden;
+	height: 100%;
+}
+.t20bm-tabuleiro {
+	position: relative;
+	height: 100%;
+	background-color: var(--bm-fundo);
+	background-size: cover;
+	background-position: center;
+}
+.t20bm-tabuleiro::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, rgba(14, 15, 10, 0.86), rgba(14, 15, 10, 0.92));
+	pointer-events: none;
+}
+.t20bm-tabuleiro-conteudo {
+	position: relative;
+	height: 100%;
+	overflow-y: auto;
+	padding: 28px 40px 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 22px;
+}
+.t20bm-tabuleiro h1,
+.t20bm-tabuleiro h2,
+.t20bm-tabuleiro h3 {
+	font-family: var(--bm-fonte-titulo);
+	font-weight: 500;
+	color: var(--bm-texto);
+	border: none;
+	margin: 0;
+	line-height: 1.1;
+	text-shadow: none;
+}
+.t20bm-sobretitulo {
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--bm-texto-suave);
+}
+.t20bm-tabuleiro button {
+	font-family: var(--bm-fonte-texto);
+	background: rgba(20, 22, 16, 0.85);
+	color: var(--bm-texto);
+	border: 1px solid var(--bm-linha);
+	border-radius: 8px;
+	width: auto;
+	padding: 0 12px;
+	height: 34px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	cursor: pointer;
+}
+.t20bm-tabuleiro button:hover {
+	border-color: var(--bm-ouro);
+	box-shadow: none;
+}
+.t20bm-tabuleiro button.t20bm-icone {
+	width: 34px;
+	padding: 0;
+	justify-content: center;
+}
+
+/* ---------- Cabeçalho ---------- */
+
+.t20bm-cabecalho {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 16px;
+}
+.t20bm-cabecalho-titulo {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 0;
+}
+.t20bm-cabecalho-titulo .t20bm-sobretitulo {
+	color: var(--bm-ouro);
+}
+.t20bm-cabecalho h1 {
+	font-size: 34px;
+}
+.t20bm-local {
+	font-size: 14px;
+	color: var(--bm-texto-suave);
+}
+.t20bm-cabecalho-direita {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 10px;
+	flex: none;
+}
+.t20bm-controles-mestre {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+.t20bm-previa-aviso {
+	font-size: 12px;
+	color: var(--bm-ouro);
+	margin-right: 4px;
+}
+.t20bm-turno {
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--bm-ouro);
+	border: 1px solid var(--bm-ouro);
+	border-radius: 999px;
+	padding: 9px 16px;
+	background: rgba(201, 168, 106, 0.06);
+}
+
+/* ---------- Cartões dos exércitos ---------- */
+
+.t20bm-exercitos-painel {
+	display: grid;
+	grid-template-columns: 1fr 40px 1fr;
+	align-items: stretch;
+}
+.t20bm-versus {
+	display: grid;
+	place-items: center;
+	color: var(--bm-ouro);
+	font-family: "Segoe UI Symbol", "Noto Sans Symbols", "DejaVu Sans", sans-serif;
+	font-size: 26px;
+	opacity: 0.9;
+}
+.t20bm-cartao-exercito {
+	background: rgba(20, 35, 43, 0.88);
+	border: 1px solid var(--bm-aliado-borda);
+	border-radius: 10px;
+	padding: 20px 22px 0;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	min-width: 0;
+}
+.t20bm-cartao-exercito.inimigo {
+	background: rgba(42, 26, 24, 0.88);
+	border-color: var(--bm-inimigo-borda);
+}
+.t20bm-cartao-exercito-topo {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 12px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid var(--bm-linha);
+}
+.t20bm-cartao-exercito-topo .t20bm-sobretitulo {
+	color: var(--bm-aliado-rotulo);
+}
+.t20bm-cartao-exercito.inimigo .t20bm-cartao-exercito-topo .t20bm-sobretitulo {
+	color: var(--bm-inimigo-rotulo);
+}
+.t20bm-cartao-exercito h2 {
+	font-size: 22px;
+	margin-top: 8px;
+}
+.t20bm-pontos {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	flex: none;
+}
+.t20bm-pontos-valor {
+	font-family: var(--bm-fonte-titulo);
+	font-size: 38px;
+	line-height: 1;
+}
+.t20bm-comando {
+	display: flex;
+	align-items: center;
+	gap: 18px;
+}
+.t20bm-comando-nomes {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+.t20bm-comando-nomes .t20bm-sobretitulo {
+	font-size: 9px;
+	color: var(--bm-aliado-rotulo);
+}
+.t20bm-cartao-exercito.inimigo .t20bm-comando-nomes .t20bm-sobretitulo {
+	color: var(--bm-inimigo-rotulo);
+}
+.t20bm-nome-general {
+	font-family: var(--bm-fonte-titulo);
+	font-size: 22px;
+	line-height: 1.05;
+	margin-bottom: 4px;
+}
+.t20bm-substituto {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 14px;
+}
+
+/* Tokens: hierarquia de tamanhos do layout */
+.t20bm-token {
+	box-sizing: border-box;
+	display: inline-grid;
+	place-items: center;
+	flex: none;
+	object-fit: cover;
+	border-radius: 50%;
+	border: 2px solid rgba(236, 228, 210, 0.25);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+	background: rgba(0, 0, 0, 0.35);
+}
+.t20bm-cartao-exercito.aliado .t20bm-token { border-color: rgba(127, 178, 201, 0.55); }
+.t20bm-cartao-exercito.inimigo .t20bm-token { border-color: rgba(217, 138, 124, 0.55); }
+.t20bm-token.clicavel { cursor: pointer; }
+.t20bm-token.clicavel:hover { border-color: var(--bm-ouro); }
+.t20bm-token.general { width: var(--bm-retrato-general); height: var(--bm-retrato-general); }
+.t20bm-token.substituto { width: var(--bm-retrato-substituto); height: var(--bm-retrato-substituto); }
+.t20bm-token.personalidade { width: var(--bm-retrato-personalidade); height: var(--bm-retrato-personalidade); }
+.t20bm-token.heroi { width: var(--bm-retrato-heroi); height: var(--bm-retrato-heroi); }
+.t20bm-token.estandarte {
+	width: var(--bm-retrato-estandarte);
+	height: var(--bm-retrato-estandarte);
+	border-radius: 8px;
+	object-fit: contain;
+	padding: 4px;
+	background: rgba(10, 10, 8, 0.55);
+	color: var(--bm-texto-suave);
+	font-size: 22px;
+}
+.t20bm-token.estandarte.carregado { border-color: var(--bm-ouro); }
+.t20bm-token.vazio { border-style: dashed; }
+
+.t20bm-presencas {
+	display: grid;
+	/* Personalidades: largura para 4 tokens; estandartes: para 2 (o resto rola) */
+	grid-template-columns: minmax(0, 1fr) calc(2 * var(--bm-retrato-estandarte) + 18px);
+	gap: 18px;
+}
+.t20bm-presenca {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-width: 0;
+}
+.t20bm-fila {
+	display: flex;
+	gap: 12px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding: 2px 2px 6px;
+	scrollbar-width: thin;
+	min-height: calc(var(--bm-retrato-personalidade) + 8px);
+	align-items: center;
+}
+.t20bm-presenca.personalidades .t20bm-fila {
+	max-width: calc(4 * var(--bm-retrato-personalidade) + 3 * 12px + 8px);
+}
+.t20bm-nenhum {
+	color: var(--bm-texto-suave);
+	font-size: 13px;
+}
+
+/* Carrossel de modificadores de Guerra */
+.t20bm-carrossel {
+	position: relative;
+	height: 34px;
+	border-top: 1px solid var(--bm-linha);
+	margin-top: auto;
+}
+.t20bm-carrossel-item {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	font-size: 13px;
+	opacity: 0;
+	transition: opacity 0.6s ease;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.t20bm-carrossel-item.ativo { opacity: 1; }
+.t20bm-carrossel-item small {
+	color: var(--bm-ouro);
+	font-weight: 600;
+}
+
+/* ---------- Progresso do turno ---------- */
+
+.t20bm-progresso {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.t20bm-etapas {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 24px;
+}
+.t20bm-etapa {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	height: 48px;
+	padding: 0 14px;
+	border: 1px solid var(--bm-linha);
+	border-radius: 8px;
+	background: rgba(20, 22, 16, 0.7);
+	color: var(--bm-texto-suave);
+	font-size: 14px;
+}
+.t20bm-etapa + .t20bm-etapa::before {
+	content: "›";
+	position: absolute;
+	left: -17px;
+	color: var(--bm-texto-suave);
+}
+.t20bm-etapa-marca {
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	display: grid;
+	place-items: center;
+	font-size: 11px;
+	background: rgba(236, 228, 210, 0.12);
+	flex: none;
+}
+.t20bm-etapa.feita { color: var(--bm-texto); }
+.t20bm-etapa.feita .t20bm-etapa-marca { background: rgba(120, 160, 110, 0.35); color: #cfe3c3; }
+.t20bm-etapa.atual {
+	color: var(--bm-ouro);
+	border-color: var(--bm-ouro);
+	background: rgba(201, 168, 106, 0.16);
+	font-weight: 600;
+}
+.t20bm-etapa.atual .t20bm-etapa-marca { background: var(--bm-ouro); color: #1c1a12; }
+
+/* ---------- Campo de batalha ---------- */
+
+.t20bm-campo {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+.t20bm-campo > h2 {
+	font-size: 22px;
+}
+.t20bm-areas {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	min-height: 250px;
+	border-radius: 6px;
+	background-color: #2b2e1c;
+	background-size: cover;
+	background-position: center;
+	overflow: hidden;
+}
+.t20bm-area-campo {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 16px 18px;
+	background: rgba(20, 22, 12, 0.35);
+	border-left: 1px solid rgba(236, 228, 210, 0.22);
+	min-width: 0;
+}
+.t20bm-area-campo:first-child { border-left: none; }
+.t20bm-area-campo.destaque {
+	background: rgba(201, 168, 106, 0.12);
+	box-shadow: inset 0 0 0 2px var(--bm-ouro);
+	border-left-color: transparent;
+}
+.t20bm-romano {
+	font-size: 10px;
+	letter-spacing: 0.1em;
+	color: var(--bm-ouro);
+}
+.t20bm-area-campo h3 {
+	font-size: 18px;
+	line-height: 1.25;
+	text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+.t20bm-area-campo .t20bm-sobretitulo {
+	color: var(--bm-ouro);
+	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+.t20bm-herois {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: auto;
+}
+
+/* ---------- Rodapé ---------- */
+
+.t20bm-rodape-tabuleiro {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding-top: 18px;
+	border-top: 1px solid var(--bm-linha);
+}
+.t20bm-rodape-tabuleiro h2 {
+	font-size: 20px;
+}
+.t20bm-rodape-tabuleiro p {
+	margin: 6px 0 0;
+	font-size: 13px;
+	color: var(--bm-texto-suave);
+}
+
+/* ---------- Telas estreitas ---------- */
+
+@container tabuleiro (max-width: 980px) {
+	.t20bm-tabuleiro-conteudo { padding: 20px; }
+	.t20bm-exercitos-painel { grid-template-columns: 1fr; gap: 10px; }
+	.t20bm-versus { height: 24px; }
+	.t20bm-etapas { grid-template-columns: repeat(2, 1fr); gap: 10px 24px; }
+	.t20bm-etapa:nth-child(3)::before { display: none; }
+	.t20bm-areas { grid-template-columns: repeat(2, 1fr); }
+	.t20bm-area-campo { min-height: 150px; }
+	.t20bm-area-campo:nth-child(3) { border-left: none; }
+	.t20bm-area-campo:nth-child(n + 3) { border-top: 1px solid rgba(236, 228, 210, 0.22); }
+	.t20bm-cabecalho h1 { font-size: 28px; }
+	.t20bm-nome-general { font-size: 19px; }
+}
+@container tabuleiro (max-width: 560px) {
+	.t20bm-cabecalho { flex-direction: column; }
+	.t20bm-cabecalho-direita { align-items: flex-start; }
+	.t20bm-presencas { grid-template-columns: 1fr; }
+	.t20bm-areas { grid-template-columns: 1fr; }
+	.t20bm-area-campo { border-left: none; border-top: 1px solid rgba(236, 228, 210, 0.22); }
+	.t20bm-token.general { width: 80px; height: 80px; }
 }

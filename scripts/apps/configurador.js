@@ -9,6 +9,7 @@ import { L, caminho, log } from "../modulo.js";
 import { TAMANHOS, MODIFICADORES_GUERRA, POSICOES, LIMIAR_PADRAO } from "../constantes.js";
 import { limiarVitoria, formulaInimigos } from "../regras.js";
 import { dadosInimigo, rolarInimigo } from "../rolagens.js";
+import { retratoVivo } from "../retratos.js";
 import { lerBatalha, gravarBatalha } from "../armazenamento.js";
 import {
 	retratoDeAtor, adicionarModificador, removerIndice, adicionarRetrato, adicionarHerois, moverIndice, duplicarIndice,
@@ -101,7 +102,7 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 				nome: ex.nome,
 				pontosIniciais: ex.pontosIniciais,
 				pontos: ex.pontos,
-				general: retratoVivo(ex.general, true),
+				general: retratoVivo(ex.general, { comGuerra: true }),
 				substituto: retratoVivo(ex.substituto),
 				personalidades: ex.personalidades.map((r) => retratoVivo(r)),
 				estandartes: ex.estandartes.map((r) => retratoVivo(r)),
@@ -295,25 +296,6 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 }
 
 /* ---------------- Auxiliares ---------------- */
-
-/** Retrato com nome/imagem atuais do ator (se existir no mundo), senão os guardados. */
-function retratoVivo(retrato, comGuerra = false) {
-	const r = retrato ?? {};
-	const ator = r.uuid ? fromUuidSync(r.uuid, { strict: false }) : null;
-	const vivo = {
-		...r,
-		nome: ator?.name ?? r.nome ?? "",
-		img: ator?.img ?? r.img ?? null,
-		temAtor: !!r.uuid,
-		atorSumiu: !!r.uuid && !ator,
-		vazio: !r.uuid && !r.nome && !r.img
-	};
-	if (comGuerra) {
-		const guerraFicha = ator?.system?.pericias?.guer?.value;
-		vivo.guerraFicha = Number.isFinite(Number(guerraFicha)) && guerraFicha !== undefined ? Number(guerraFicha) : null;
-	}
-	return vivo;
-}
 
 function valorDoCampo(campo) {
 	if (campo.type === "checkbox") return campo.checked;

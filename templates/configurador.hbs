@@ -37,18 +37,20 @@
 		</div>
 		<div class="form-group">
 			<label>{{localize "T20BM.Configurador.ImagemFundo"}}</label>
-			<div class="form-fields">
-				<input type="text" name="imagens.fundo" value="{{e.imagens.fundo}}">
+			<div class="t20bm-linha t20bm-campo-imagem">
+				<input type="text" name="imagens.fundo" value="{{e.imagens.fundo}}" data-redesenhar>
 				<button type="button" class="t20bm-icone" data-action="escolherImagem" data-campo="imagens.fundo" data-tooltip="T20BM.Configurador.Escolher"><i class="fa-solid fa-file-image"></i></button>
 			</div>
 		</div>
+		{{#if e.imagens.fundo}}<img class="t20bm-previa fundo" src="{{e.imagens.fundo}}" alt="{{localize 'T20BM.Configurador.ImagemFundo'}}">{{/if}}
 		<div class="form-group">
 			<label>{{localize "T20BM.Configurador.ImagemCampo"}}</label>
-			<div class="form-fields">
-				<input type="text" name="imagens.campo" value="{{e.imagens.campo}}">
+			<div class="t20bm-linha t20bm-campo-imagem">
+				<input type="text" name="imagens.campo" value="{{e.imagens.campo}}" data-redesenhar>
 				<button type="button" class="t20bm-icone" data-action="escolherImagem" data-campo="imagens.campo" data-tooltip="T20BM.Configurador.Escolher"><i class="fa-solid fa-file-image"></i></button>
 			</div>
 		</div>
+		{{#if e.imagens.campo}}<img class="t20bm-previa campo" src="{{e.imagens.campo}}" alt="{{localize 'T20BM.Configurador.ImagemCampo'}}">{{/if}}
 	</section>
 	{{/if}}
 
@@ -253,7 +255,7 @@
 			</div>
 			<div class="form-group">
 				<label>{{localize "T20BM.Configurador.SubtituloArea"}}</label>
-				<div class="form-fields"><input type="text" name="areas.{{i}}.subtitulo" value="{{subtitulo}}"></div>
+				<div class="form-fields"><span class="t20bm-valor">{{posicaoNome}}</span></div>
 			</div>
 		</fieldset>
 		{{/each}}

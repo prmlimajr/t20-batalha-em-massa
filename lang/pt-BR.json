@@ -24,7 +24,9 @@
 			"Encerrar": "Encerrar exibição",
 			"AvisoExibida": "Há uma batalha em exibição para a mesa.",
 			"NaoIniciada": "não iniciada",
-			"Turno": "turno {n}"
+			"Turno": "turno {n}",
+			"Previa": "Pré-visualizar (só você vê)",
+			"Reabrir": "Abrir o tabuleiro para mim"
 		},
 		"Configurador": {
 			"Titulo": "Configurar batalha",
@@ -76,9 +78,9 @@
 			"HeroisDica": "Personagens dos jogadores que participam da batalha. Começam na Retaguarda.",
 			"AdicionarJogadores": "Adicionar personagens dos jogadores",
 			"SemJogadores": "Nenhum personagem com dono jogador neste mundo.",
-			"CampoDica": "As 4 áreas correspondem às posições da regra (o modificador do evento é fixo); só o nome e o subtítulo mudam.",
+			"CampoDica": "As 4 áreas correspondem às posições da regra: o modificador do evento e o subtítulo (nome da posição) são fixos; só o nome da área muda.",
 			"NomeArea": "Nome",
-			"SubtituloArea": "Subtítulo",
+			"SubtituloArea": "Subtítulo (fixo)",
 			"SoAtores": "Só atores podem ser soltos aqui.",
 			"Salvar": "Salvar",
 			"Salvo": "Batalha salva.",
@@ -109,6 +111,42 @@
 		"Opcionais": {
 			"Dica": "Regras opcionais do Apêndice B (p. 375), por batalha. Lobos solitários define se o grupo anda junto e não pode mudar depois que a batalha começa (para mudar, reinicie a batalha no gerenciador).",
 			"Travada": "travada: a batalha já começou"
+		},
+		"Modal": {
+			"Local": "Local",
+			"Turno": "Turno {n}",
+			"PreBatalha": "Pré-batalha",
+			"Pontos": "Pontos",
+			"Substituto": "Substituto",
+			"Personalidades": "Personalidades presentes",
+			"SemModificadores": "Sem modificadores de Guerra",
+			"Progresso": "Progresso do turno",
+			"CampoDeBatalha": "Campo de batalha",
+			"SoVoce": "Pré-visualização: só você vê",
+			"EncerrarDica": "Fecha o tabuleiro para toda a mesa",
+			"FecharParaMim": "Fechar só para mim (a mesa continua vendo)",
+			"Mensagens": {
+				"pre": {
+					"Titulo": "Os exércitos se alinham.",
+					"Texto": "Os generais escolhem o terreno e motivam as tropas antes do primeiro turno."
+				},
+				"preparacao": {
+					"Titulo": "Os heróis se preparam.",
+					"Texto": "Cada herói tem o equivalente a uma rodada de combate para usar habilidades e ativar itens."
+				},
+				"posicionamento": {
+					"Titulo": "Escolham sua posição.",
+					"Texto": "Avancem, recuem ou permaneçam: uma área por turno. Posições avançadas trazem eventos mais perigosos e maiores recompensas."
+				},
+				"evento": {
+					"Titulo": "O {area} aguarda sua ordem.",
+					"Texto": "Resolva o confronto e atualize o rumo da batalha."
+				},
+				"generais": {
+					"Titulo": "Os generais medem forças.",
+					"Texto": "Teste de Guerra oposto: o vencedor ganha 1 ponto de vitória, mais 1 a cada 5 de diferença."
+				}
+			}
 		}
 	}
 }

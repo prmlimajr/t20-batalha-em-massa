@@ -8,6 +8,7 @@
  *   itens "arma": rolls[type=ataque].parts = [["1d20"], [perícia], [bônus]]; rolls[type=dano].parts = [[fórmula, tipo]]
  */
 import { danoMedio, danoMedioCritico } from "./regras.js";
+import { imagemDoAtor } from "./configuracao.js";
 
 const numero = (x) => (x === undefined || x === null || x === "" || !Number.isFinite(Number(x)) ? null : Number(x));
 const texto = (x) => String(x ?? "").trim().replace(/\s+/g, " ");
@@ -54,7 +55,7 @@ export function resumoInimigo(ator) {
 	const linhas = [texto(s.detalhes?.ataquescac), texto(s.detalhes?.ataquesad)].filter(Boolean);
 	return {
 		nome: ator?.name ?? "",
-		img: ator?.img ?? null,
+		img: imagemDoAtor(ator),
 		tipo: ator?.type ?? null,
 		nd: at.nd ?? null,
 		pv: numero(at.pv?.max ?? at.pv?.value),

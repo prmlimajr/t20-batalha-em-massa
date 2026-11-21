@@ -1,0 +1,141 @@
+<div class="t20bm-tabuleiro" style="{{estiloFundo}}">
+	<div class="t20bm-tabuleiro-conteudo">
+
+		{{!-- ============ Cabeçalho ============ --}}
+		<header class="t20bm-cabecalho">
+			<div class="t20bm-cabecalho-titulo">
+				<span class="t20bm-sobretitulo">{{tamanho}}</span>
+				<h1>{{#if nome}}{{nome}}{{else}}{{localize "T20BM.Gerenciador.SemNome"}}{{/if}}</h1>
+				{{#if local}}<span class="t20bm-local">{{localize "T20BM.Modal.Local"}}: {{local}}</span>{{/if}}
+			</div>
+			<div class="t20bm-cabecalho-direita">
+				{{#if gm}}
+				<div class="t20bm-controles-mestre">
+					{{#if exibida}}
+					<button type="button" data-action="encerrar" data-tooltip="T20BM.Modal.EncerrarDica"><i class="fa-solid fa-eye-slash"></i> {{localize "T20BM.Gerenciador.Encerrar"}}</button>
+					{{else}}
+					<span class="t20bm-previa-aviso"><i class="fa-solid fa-user-secret"></i> {{localize "T20BM.Modal.SoVoce"}}</span>
+					<button type="button" data-action="exibir"><i class="fa-solid fa-eye"></i> {{localize "T20BM.Gerenciador.Exibir"}}</button>
+					{{/if}}
+					<button type="button" class="t20bm-icone" data-action="configurar" data-tooltip="T20BM.Gerenciador.Configurar"><i class="fa-solid fa-gear"></i></button>
+					<button type="button" class="t20bm-icone" data-action="fecharLocal" data-tooltip="T20BM.Modal.FecharParaMim"><i class="fa-solid fa-xmark"></i></button>
+				</div>
+				{{/if}}
+				<span class="t20bm-turno">{{rotuloTurno}}</span>
+			</div>
+		</header>
+
+		{{!-- ============ Exércitos ============ --}}
+		<section class="t20bm-exercitos-painel">
+			{{#each exercitos}}
+			{{#if @index}}<div class="t20bm-versus" aria-hidden="true">&#x2694;&#xFE0E;</div>{{/if}}
+			<article class="t20bm-cartao-exercito {{lado}}">
+				<header class="t20bm-cartao-exercito-topo">
+					<div>
+						<span class="t20bm-sobretitulo">{{#if @index}}{{localize "T20BM.Configurador.ExercitoInimigo"}}{{else}}{{localize "T20BM.Configurador.SeuExercito"}}{{/if}}</span>
+						<h2>{{nome}}</h2>
+					</div>
+					<div class="t20bm-pontos">
+						<span class="t20bm-pontos-valor">{{pontos}}</span>
+						<span class="t20bm-sobretitulo">{{localize "T20BM.Modal.Pontos"}}</span>
+					</div>
+				</header>
+
+				<div class="t20bm-comando">
+					{{#if general}}
+					<img class="t20bm-token general {{#if general.podeVer}}clicavel{{/if}}" src="{{general.img}}" alt="{{general.nome}}" {{#if general.podeVer}}data-action="abrirFicha" data-uuid="{{general.uuid}}"{{/if}}>
+					{{else}}
+					<span class="t20bm-token general vazio"></span>
+					{{/if}}
+					<div class="t20bm-comando-nomes">
+						<span class="t20bm-sobretitulo">{{localize "T20BM.Configurador.General"}}</span>
+						<span class="t20bm-nome-general">{{#if general}}{{general.nome}}{{else}}—{{/if}}</span>
+						{{#if substituto}}
+						<span class="t20bm-sobretitulo">{{localize "T20BM.Modal.Substituto"}}</span>
+						<span class="t20bm-substituto">
+							<img class="t20bm-token substituto {{#if substituto.podeVer}}clicavel{{/if}}" src="{{substituto.img}}" alt="" {{#if substituto.podeVer}}data-action="abrirFicha" data-uuid="{{substituto.uuid}}"{{/if}}>
+							{{substituto.nome}}
+						</span>
+						{{/if}}
+					</div>
+				</div>
+
+				<div class="t20bm-presencas">
+					<div class="t20bm-presenca personalidades">
+						<span class="t20bm-sobretitulo">{{localize "T20BM.Modal.Personalidades"}}</span>
+						<div class="t20bm-fila">
+							{{#each personalidades}}
+							<img class="t20bm-token personalidade {{#if podeVer}}clicavel{{/if}}" src="{{img}}" alt="{{nome}}" data-tooltip="{{nome}}" {{#if podeVer}}data-action="abrirFicha" data-uuid="{{uuid}}"{{/if}}>
+							{{else}}
+							<span class="t20bm-nenhum">—</span>
+							{{/each}}
+						</div>
+					</div>
+					<div class="t20bm-presenca estandartes">
+						<span class="t20bm-sobretitulo">{{localize "T20BM.Configurador.Estandartes"}}</span>
+						<div class="t20bm-fila">
+							{{#each estandartes}}
+							{{#if img}}
+							<img class="t20bm-token estandarte {{#if carregado}}carregado{{/if}}" src="{{img}}" alt="{{nome}}" data-tooltip="{{nome}}">
+							{{else}}
+							<span class="t20bm-token estandarte vazio" data-tooltip="{{nome}}"><i class="fa-solid fa-flag"></i></span>
+							{{/if}}
+							{{else}}
+							<span class="t20bm-nenhum">—</span>
+							{{/each}}
+						</div>
+					</div>
+				</div>
+
+				<footer class="t20bm-carrossel">
+					{{#each modificadores}}
+					<span class="t20bm-carrossel-item {{#if @first}}ativo{{/if}}">{{nome}} <small>{{valor}}</small></span>
+					{{else}}
+					<span class="t20bm-carrossel-item ativo t20bm-nenhum">{{localize "T20BM.Modal.SemModificadores"}}</span>
+					{{/each}}
+				</footer>
+			</article>
+			{{/each}}
+		</section>
+
+		{{!-- ============ Progresso do turno ============ --}}
+		<section class="t20bm-progresso">
+			<span class="t20bm-sobretitulo">{{localize "T20BM.Modal.Progresso"}}</span>
+			<ol class="t20bm-etapas">
+				{{#each etapas}}
+				<li class="t20bm-etapa {{#if feita}}feita{{/if}} {{#if atual}}atual{{/if}}">
+					<span class="t20bm-etapa-marca">{{#if feita}}<i class="fa-solid fa-check"></i>{{else}}{{numero}}{{/if}}</span>
+					<span class="t20bm-etapa-nome">{{nome}}</span>
+				</li>
+				{{/each}}
+			</ol>
+		</section>
+
+		{{!-- ============ Campo de batalha ============ --}}
+		<section class="t20bm-campo">
+			<h2>{{localize "T20BM.Modal.CampoDeBatalha"}}</h2>
+			<div class="t20bm-areas" style="{{estiloCampo}}">
+				{{#each areas}}
+				<div class="t20bm-area-campo {{#if destaque}}destaque{{/if}}" data-area="{{indice}}">
+					<span class="t20bm-romano">{{romano}}</span>
+					<h3>{{nome}}</h3>
+					<span class="t20bm-sobretitulo">{{subtitulo}}</span>
+					<div class="t20bm-herois">
+						{{#each herois}}
+						<img class="t20bm-token heroi {{#if podeVer}}clicavel{{/if}}" src="{{img}}" alt="{{nome}}" data-tooltip="{{nome}}" {{#if podeVer}}data-action="abrirFicha" data-uuid="{{uuid}}"{{/if}}>
+						{{/each}}
+					</div>
+				</div>
+				{{/each}}
+			</div>
+		</section>
+
+		{{!-- ============ Rodapé ============ --}}
+		<footer class="t20bm-rodape-tabuleiro">
+			<div>
+				<h2>{{mensagemTitulo}}</h2>
+				<p>{{mensagemTexto}}</p>
+			</div>
+		</footer>
+	</div>
+</div>

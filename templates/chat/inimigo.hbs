@@ -1,21 +1,21 @@
 <div class="t20bm-cartao t20bm-cartao-inimigo">
-	<header>
+	<div class="t20bm-cartao-topo">
 		{{#if img}}<img class="t20bm-cartao-retrato" src="{{img}}" alt="">{{/if}}
-		<div>
+		<div class="t20bm-cartao-titulo">
 			<span class="t20bm-cartao-rotulo">{{localize "T20BM.Inimigos.Cartao"}} · {{formula}} = {{face}}</span>
-			<h3>{{link}}</h3>
+			<span class="t20bm-cartao-nome">{{link}}</span>
 			{{#if heroi}}<span class="t20bm-cartao-rotulo">{{localize "T20BM.Inimigos.Contra" heroi=heroi}}</span>{{/if}}
 		</div>
-	</header>
+	</div>
 	{{#if atorSumiu}}<p class="t20bm-alerta">{{localize "T20BM.Configurador.AtorSumiu"}}</p>{{/if}}
-	<dl class="t20bm-cartao-stats">
-		<div><dt>ND</dt><dd>{{#if nd}}{{nd}}{{else}}—{{/if}}</dd></div>
-		<div><dt>{{localize "T20BM.Inimigos.Defesa"}}</dt><dd>{{#if defesa}}{{defesa}}{{else}}—{{/if}}</dd></div>
-		<div><dt>Fort</dt><dd>{{fortTxt}}</dd></div>
-		<div><dt>Ref</dt><dd>{{reflTxt}}</dd></div>
-		<div><dt>Von</dt><dd>{{vontTxt}}</dd></div>
-		{{#if pv}}<div><dt>PV</dt><dd>{{pv}}</dd></div>{{/if}}
-	</dl>
+	<div class="t20bm-cartao-stats">
+		<div><span>ND</span><strong>{{#if nd}}{{nd}}{{else}}—{{/if}}</strong></div>
+		<div><span>{{localize "T20BM.Inimigos.Defesa"}}</span><strong>{{#if defesa}}{{defesa}}{{else}}—{{/if}}</strong></div>
+		<div><span>PV</span><strong>{{#if pv}}{{pv}}{{else}}—{{/if}}</strong></div>
+		<div><span>Fort</span><strong>{{fortTxt}}</strong></div>
+		<div><span>Ref</span><strong>{{reflTxt}}</strong></div>
+		<div><span>Von</span><strong>{{vontTxt}}</strong></div>
+	</div>
 	{{#if ataquesTexto.length}}
 	<ul class="t20bm-cartao-ataques">{{#each ataquesTexto}}<li>{{this}}</li>{{/each}}</ul>
 	{{else if armas.length}}

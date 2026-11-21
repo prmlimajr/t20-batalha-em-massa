@@ -10,6 +10,8 @@
 import { MODULE_ID, SOCKET, L, log } from "./modulo.js";
 import * as armazenamento from "./armazenamento.js";
 import { GerenciadorBatalhas, MenuGerenciador } from "./apps/gerenciador.js";
+import { ModalBatalha } from "./apps/modal-batalha.js";
+import { registrarExibicao, sincronizarExibicao } from "./exibicao.js";
 
 /* ---------------- Configurações ---------------- */
 
@@ -68,8 +70,9 @@ Hooks.once("init", () => {
 	Hooks.on(armazenamento.HOOK_BATALHAS, () => GerenciadorBatalhas.atualizar());
 	Hooks.on(armazenamento.HOOK_EXIBIDA, (id) => {
 		GerenciadorBatalhas.atualizar();
-		log("batalha exibida:", id || "(nenhuma)"); // T7: abrir/fechar o modal para todos
+		log("batalha exibida:", id || "(nenhuma)");
 	});
+	registrarExibicao();
 	log("inicializado");
 });
 
@@ -81,7 +84,9 @@ Hooks.once("ready", () => {
 	registrarSocket();
 	game.modules.get(MODULE_ID).api = {
 		abrirGerenciador: () => GerenciadorBatalhas.abrir(),
+		abrirModal: (id, opcoes) => ModalBatalha.abrir(id ?? armazenamento.idExibida(), opcoes),
 		...armazenamento
 	};
+	sincronizarExibicao(); // quem entra no mundo com uma batalha em exibição já recebe o modal
 	log("pronto");
 });
