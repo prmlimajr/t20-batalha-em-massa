@@ -14,16 +14,16 @@ import { lerBatalha, gravarBatalha, idExibida, exibirParaTodos, encerrarExibicao
 import { resumoFim, declararVencedor } from "../fim.js";
 import {
 	aplicarTerreno, aplicarMotivacao, avancarEtapa, voltarEtapa, podeVoltar,
-	marcarPronto, todosProntos, registrarEvento, registrarInimigo
+	marcarPronto, todosProntos, registrarEvento, registrarInimigo, prontosDa, ETAPAS_COM_PRONTOS
 } from "../conducao.js";
 import {
 	rolarTesteOposto, rolarMotivacao, lembretePreparacao, rolarEvento, rolarInimigo, rolarDerrotaGeneral, rolarGeneral,
-	ndsDaTabela, enviarResumoFim
+	ndsDaTabela, enviarResumoFim, rolarNovoOficial
 } from "../rolagens.js";
-import { composicaoBonus, podeRolar, registrarRolagem, sortearJogador, definirQuemRola } from "../generais.js";
-import { atualizarResolucao, alternarEstandarte, derrotarGeneralInimigo, definirAjuste } from "../evento.js";
+import { composicaoBonus, podeRolar, registrarRolagem, sortearJogador, definirQuemRola, resetarGenerais } from "../generais.js";
+import { atualizarResolucao, alternarEstandarte, derrotarGeneralInimigo, definirAjuste, substituirGeneral, temSubstituto } from "../evento.js";
 import { animarAbertura } from "../abertura.js";
-import { validarMovimento, moverHeroi, opcoesDeMovimento, jaMoveu } from "../posicionamento.js";
+import { validarMovimento, moverHeroi, opcoesDeMovimento, removerHeroi, alternarMorto } from "../posicionamento.js";
 import { pedirAoMestre, registrarTratador } from "../socket.js";
 import { visaoBatalha } from "../visao.js";
 import { retratoVivo } from "../retratos.js";
@@ -32,6 +32,7 @@ import { ConfiguradorBatalha } from "./configurador.js";
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 
 const INTERVALO_CARROSSEL = 5000;
+const DURACAO_RESULTADO = 5000; // animação do vencedor da rodada
 
 export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 	static #atual = null;
@@ -99,6 +100,7 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 			estandarte: ModalBatalha.#estandarte,
 			generalDerrotado: ModalBatalha.#generalDerrotado,
 			rolarGeneral: ModalBatalha.#rolarGeneral,
+			resetarGenerais: ModalBatalha.#resetarGenerais,
 			reiniciarBatalha: ModalBatalha.#reiniciarBatalha,
 			declararVencedor: ModalBatalha.#declararVencedor
 		}
@@ -135,10 +137,11 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 				paraRecuar: o.de - 1,
 				paraAvancar: o.de + 1
 			})),
-			jaMoveu: posicionando && !gm && !v.lobosSolitarios && jaMoveu(salvo, salvo.herois[0]?.uuid),
+
 			lobos: v.lobosSolitarios
 		};
 		const generais = dadosGenerais(salvo, v, gm);
+		const transicao = this.#emTransicao(v.etapa);
 		const fim = salvo.fim ? formatarFim(resumoFim(salvo, { nds: await ndsDaTabela(salvo) })) : null;
 		const dadosMensagem = { area: v.mensagem.area };
 		const chaveMensagem = v.mensagem.etapa === "posicionamento" && v.lobosSolitarios ? "posicionamentoLobos" : v.mensagem.etapa;
@@ -152,11 +155,14 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 			mensagemTitulo: generais?.mensagemTitulo ?? L(`Modal.Mensagens.${chaveMensagem}.Titulo`, dadosMensagem),
 			mensagemTexto: generais?.mensagemTexto ?? L(`Modal.Mensagens.${chaveMensagem}.Texto`, dadosMensagem),
 			faseGenerais: !!generais,
+			transicaoGenerais: transicao,
+			mostrarSecoesTurno: !generais || transicao,
+			podeResetarGenerais: gm && !!generais && !salvo.fim && Object.keys(salvo.rodada.generais ?? {}).length + (salvo.rodada.resultadoGenerais ? 1 : 0) > 0,
 			fim,
 			podeDeclarar: gm && salvo.iniciada && !salvo.fim,
 			rolagemDoJogador: this.rolandoLocal,
 			podeVoltar: podeVoltar(salvo),
-			preparacao: dadosPreparacao(salvo, v.etapa),
+			prontos: dadosProntos(salvo, v.etapa),
 			sorteiosDoMestre: gm && v.etapa === "evento",
 			editaResolucao: gm && v.etapa === "evento",
 			mostrarResolucao: (v.etapa === "evento" || v.etapa === "generais") && v.resolucoes.length > 0,
@@ -182,6 +188,7 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 		this.#ajustarAreaLivre();
 		this.#ligarArrastar();
 		this.#ligarResolucao();
+		this.#ligarMenuDoHeroi();
 		this.#anunciarResultado(lerBatalha(this.idBatalha));
 		if (this.abrindo) {
 			this.abrindo = false;
@@ -339,6 +346,106 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 		}
 	}
 
+	/**
+	 * Transição Evento → Teste dos Generais: as seções do turno somem (fade) e os cartões crescem (slide).
+	 * Dura ~1,6 s a partir da primeira renderização já na etapa dos generais.
+	 */
+	#emTransicao(etapa) {
+		if (etapa === "generais" && this.etapaRenderizada === "evento") this.transicaoAte = Date.now() + 1600;
+		this.etapaRenderizada = etapa;
+		return etapa === "generais" && Date.now() < (this.transicaoAte ?? 0);
+	}
+
+	static async #resetarGenerais() {
+		if (!game.user.isGM) return;
+		const ok = await DialogV2.confirm({
+			window: { title: L("Generais.Resetar") },
+			content: `<p>${L("Generais.ResetarConfirma")}</p>`,
+			rejectClose: false
+		});
+		if (!ok) return;
+		this.ultimoResultado = ""; // o próximo resultado anima de novo
+		await gravarBatalha(this.idBatalha, resetarGenerais(lerBatalha(this.idBatalha)));
+	}
+
+	/* ---------------- Heróis: menu do mestre (clique direito no token) ---------------- */
+
+	#ligarMenuDoHeroi() {
+		if (!game.user.isGM) return;
+		for (const retrato of this.element.querySelectorAll(".t20bm-token.general[data-lado]")) {
+			retrato.addEventListener("contextmenu", (ev) => {
+				ev.preventDefault();
+				this.#removerGeneral(Number(retrato.dataset.lado));
+			});
+		}
+		for (const token of this.element.querySelectorAll(".t20bm-token.heroi")) {
+			token.addEventListener("contextmenu", (ev) => {
+				ev.preventDefault();
+				this.#menuDoHeroi(token.dataset.heroi);
+			});
+		}
+	}
+
+	async #menuDoHeroi(uuid) {
+		const estado = lerBatalha(this.idBatalha);
+		const heroi = estado?.herois.find((h) => h.uuid === uuid);
+		if (!heroi) return;
+		const nome = retratoVivo(heroi).nome || heroi.nome;
+		const escolha = await DialogV2.wait({
+			window: { title: nome },
+			content: `<p>${L("Herois.MenuTexto", { nome })}</p>`,
+			buttons: [
+				{ action: "morto", label: L(heroi.morto ? "Herois.Reviver" : "Herois.MarcarMorto"), icon: heroi.morto ? "fa-solid fa-heart-pulse" : "fa-solid fa-skull" },
+				{ action: "remover", label: L("Herois.Remover"), icon: "fa-solid fa-user-minus" },
+				{ action: "cancelar", label: L("Fim.Cancelar"), default: true }
+			],
+			rejectClose: false
+		});
+		const atual = lerBatalha(this.idBatalha);
+		if (escolha === "morto") await gravarBatalha(this.idBatalha, alternarMorto(atual, uuid));
+		if (escolha === "remover") await gravarBatalha(this.idBatalha, removerHeroi(atual, uuid));
+	}
+
+	/* ---------------- General: remover da cena (mestre) ---------------- */
+
+	/** O general sai de cena e o substituto assume nos próximos Testes dos Generais. */
+	async #removerGeneral(lado) {
+		const estado = lerBatalha(this.idBatalha);
+		const ex = estado?.exercitos[lado];
+		if (!ex) return;
+		const atual = retratoVivo(ex.general).nome || L("Generais.SemNome");
+		const anterior = Number(ex.general?.guerra) || 0;
+
+		// Sem substituto (ou já usado): um oficial assume pela regra de general derrotado (anterior −1d6−1).
+		if (!temSubstituto(ex)) {
+			const ok = await DialogV2.confirm({
+				window: { title: L("Generais.Remover") },
+				content: `<p>${L("Generais.RemoverSemSubstituto", { atual, min: anterior - 7, max: anterior - 2 })}</p>`,
+				rejectClose: false
+			});
+			if (!ok) return;
+			return this.#conduzir(async (e) => {
+				const guerra = await rolarNovoOficial(e, lado);
+				await gravarBatalha(this.idBatalha, substituirGeneral(lerBatalha(this.idBatalha), lado, guerra));
+			});
+		}
+
+		const sub = retratoVivo(ex.substituto, { comGuerra: true });
+		const novo = sub.nome || L("Evento.Oficial");
+		const sugestao = sub.guerraFicha ?? anterior;
+		const guerra = await DialogV2.prompt({
+			window: { title: L("Generais.Remover") },
+			content: `<p>${L("Generais.RemoverTexto", { atual, novo })}</p>
+				<div class="form-group"><label>${L("Generais.GuerraNovo", { novo })}</label>
+				<div class="form-fields"><input type="number" name="guerra" step="1" value="${sugestao}" autofocus></div>
+				<p class="hint">${L("Generais.GuerraNovoDica", { ficha: sub.guerraFicha ?? "—" })}</p></div>`,
+			ok: { label: L("Generais.Remover"), icon: "fa-solid fa-user-slash", callback: (_e, botao) => botao.form.elements.guerra.value },
+			rejectClose: false
+		});
+		if (guerra === null || guerra === undefined) return;
+		await gravarBatalha(this.idBatalha, substituirGeneral(lerBatalha(this.idBatalha), lado, guerra));
+	}
+
 	/* ---------------- Fim da batalha (mestre) ---------------- */
 
 	static async #reiniciarBatalha() {
@@ -398,6 +505,7 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 		const ex = estado.exercitos[r.vencedor];
 		requestAnimationFrame(() => animarAbertura({
 			container: this.element, alvo, imagem: null, classe: r.vencedor === 0 ? "aliado" : "inimigo",
+			duracao: DURACAO_RESULTADO,
 			texto: L("Generais.VenceRodada", { exercito: ex.nome }),
 			subtitulo: L(r.pontos === 1 ? "Generais.MarcaPonto" : "Generais.MarcaPontos", { pontos: r.pontos })
 		}));
@@ -540,39 +648,40 @@ function larguraDaBarraLateral() {
 	return Math.max(0, Math.ceil(window.innerWidth - esquerda));
 }
 
-/* ---------------- Preparação: quem precisa marcar "concluí" ---------------- */
+/* ---------------- Preparação e Posicionamento: quem precisa marcar "concluí" ---------------- */
 
 /**
- * Jogadores conectados que precisam concluir a Preparação: os donos dos heróis da batalha.
- * Se nenhum jogador conectado é dono de herói, todos os jogadores conectados.
+ * Jogadores conectados que precisam concluir a etapa: os donos dos heróis vivos da batalha.
+ * Se nenhum jogador conectado é dono de herói vivo, todos os jogadores conectados.
  */
 function jogadoresObrigatorios(estado) {
 	const ativos = game.users.filter((u) => u.active && !u.isGM);
-	const ehDono = (u) => estado.herois.some((h) => fromUuidSync(h.uuid, { strict: false })?.testUserPermission?.(u, "OWNER"));
+	const ehDono = (u) => estado.herois.some((h) => !h.morto && fromUuidSync(h.uuid, { strict: false })?.testUserPermission?.(u, "OWNER"));
 	const comHeroi = ativos.filter(ehDono);
 	return comHeroi.length ? comHeroi : ativos;
 }
 
-function dadosPreparacao(estado, etapa) {
-	if (etapa !== "preparacao") return { mostrar: false };
-	const prontos = new Set(estado.rodada.prontos);
-	const jogadores = jogadoresObrigatorios(estado).map((u) => ({ nome: u.name, pronto: prontos.has(u.id), cor: u.color?.css ?? u.color }));
-	const euObrigatorio = jogadoresObrigatorios(estado).some((u) => u.id === game.user.id);
+function dadosProntos(estado, etapa) {
+	if (!ETAPAS_COM_PRONTOS.includes(etapa) || estado.fim) return { mostrar: false };
+	const prontos = new Set(prontosDa(estado, etapa));
+	const obrigatorios = jogadoresObrigatorios(estado);
+	const jogadores = obrigatorios.map((u) => ({ nome: u.name, pronto: prontos.has(u.id) }));
 	return {
 		mostrar: jogadores.length > 0,
 		jogadores,
 		total: jogadores.length,
 		quantos: jogadores.filter((j) => j.pronto).length,
-		euObrigatorio,
-		euPronto: prontos.has(game.user.id)
+		euObrigatorio: obrigatorios.some((u) => u.id === game.user.id),
+		euPronto: prontos.has(game.user.id),
+		rotuloConcluir: L(`Prontos.Concluir.${etapa}`)
 	};
 }
 
 registrarTratador("pronto", async ({ idBatalha, pronto }, usuario) => {
 	let estado = lerBatalha(idBatalha);
-	if (!estado || estado.etapa !== "preparacao" || usuario.isGM) return;
+	if (!estado || !ETAPAS_COM_PRONTOS.includes(estado.etapa) || estado.fim || usuario.isGM) return;
 	estado = marcarPronto(estado, usuario.id, pronto);
-	// Todos prontos: a etapa avança sozinha (para o Posicionamento).
+	// Todos prontos: a etapa avança sozinha (Preparação → Posicionamento → Evento).
 	if (todosProntos(estado, jogadoresObrigatorios(estado).map((u) => u.id))) estado = avancarEtapa(estado).estado;
 	await gravarBatalha(idBatalha, estado);
 });

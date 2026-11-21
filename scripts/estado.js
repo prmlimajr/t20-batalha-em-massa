@@ -64,8 +64,8 @@ export function estadoPadrao(nome = "") {
 
 /**
  * Dados de uma rodada (zerados a cada turno):
- *   prontos   usuários que concluíram a Preparação
- *   movidos   quem já usou o movimento ("grupo" ou uuid do herói)
+ *   prontos   { [etapa]: userIds }  jogadores que concluíram a Preparação / o Posicionamento
+ *   inicio    { grupo, herois: { uuid: área } }  posições no início do Posicionamento
  *   eventos   { [área]: { total, d20, chave, nome } }   evento sorteado em cada área ocupada
  *   inimigos  { [área]: { face, uuid, nome, img } }    tipo de inimigo sorteado em cada área ocupada
  *   ajustes   { [área]: -2 | 0 | 2 }                  Posicionamento avançado (regra opcional)
@@ -74,7 +74,7 @@ export function estadoPadrao(nome = "") {
  */
 export function novaRodada() {
 	return {
-		prontos: [], movidos: [], eventos: {}, inimigos: {}, ajustes: {}, rolaGeneral: null, generais: {},
+		prontos: {}, inicio: null, eventos: {}, inimigos: {}, ajustes: {}, rolaGeneral: null, generais: {},
 		danoTotal: 0, bonusEvento: 0, testesPericia: 0, resultadoGenerais: null
 	};
 }
@@ -95,6 +95,8 @@ export function completarEstado(salvo) {
 	delete estado.limiar; // v0 guardava o limiar; agora é sempre calculado (regras.limiarVitoria)
 	delete estado.opcionais.rolandoPelosGenerais; // virou o padrão (sorteio de jogador, T11)
 	delete estado.rodada.evento; // v0: um evento só; agora um por área (rodada.eventos)
+	delete estado.rodada.movidos; // v0: um movimento por rodada; agora livre dentro de ±1 do início
+	if (Array.isArray(estado.rodada.prontos)) estado.rodada.prontos = { preparacao: estado.rodada.prontos };
 	estado.v = VERSAO_ESTADO;
 	return estado;
 }

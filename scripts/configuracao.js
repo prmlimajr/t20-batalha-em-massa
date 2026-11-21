@@ -81,9 +81,11 @@ const CAMPOS_BATALHA = ["nome", "local", "tamanho", "imagens", "areas", "tabelaI
  * @param {object} atual       batalha salva (pode ter mudado desde que o configurador abriu)
  * @param {object} rascunho    o que o mestre editou
  * @param {object} [opcoes]
- * @param {boolean[]} [opcoes.pontosEditados]  o mestre ajustou o placar atual de cada exército
+ * @param {boolean[]} [opcoes.pontosEditados]   o mestre ajustou o placar atual de cada exército
+ * @param {boolean[]} [opcoes.comandoEditado]   o mestre mexeu no general/substituto de cada exército
+ *   (com a batalha em andamento, sem edição eles ficam como estão: o substituto pode já ter assumido)
  */
-export function aplicarConfiguracao(atual, rascunho, { pontosEditados = [false, false] } = {}) {
+export function aplicarConfiguracao(atual, rascunho, { pontosEditados = [false, false], comandoEditado = [true, true] } = {}) {
 	const base = completarEstado(atual);
 	const novo = completarEstado(rascunho);
 	const saida = structuredClone(base);
@@ -94,7 +96,10 @@ export function aplicarConfiguracao(atual, rascunho, { pontosEditados = [false, 
 
 	saida.exercitos = [0, 1].map((i) => {
 		const ex = { ...base.exercitos[i] };
-		for (const campo of CAMPOS_EXERCITO) ex[campo] = structuredClone(novo.exercitos[i][campo]);
+		for (const campo of CAMPOS_EXERCITO) {
+			if (base.iniciada && !comandoEditado[i] && (campo === "general" || campo === "substituto")) continue;
+			ex[campo] = structuredClone(novo.exercitos[i][campo]);
+		}
 		ex.pontosIniciais = inteiro(ex.pontosIniciais);
 		if (!base.iniciada) ex.pontos = ex.pontosIniciais; // antes de começar, o placar é o inicial
 		else if (pontosEditados[i]) ex.pontos = inteiro(novo.exercitos[i].pontos);

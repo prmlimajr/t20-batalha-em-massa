@@ -1,44 +1,54 @@
 /**
  * T9 — Posicionamento (puro, testável em Node): quem pode mover qual herói, e o estado depois do movimento.
  *
- * Regras (spec, decisões 1 e 3):
- * - Jogadores: só na etapa Posicionamento, para a área vizinha (±1), uma vez por rodada, só o próprio herói.
- * - Grupo junto (padrão): qualquer jogador com herói na batalha move; o primeiro movimento leva o grupo inteiro
- *   e encerra o movimento do grupo na rodada.
- * - Lobos solitários: cada herói se move sozinho, uma vez por rodada.
- * - Mestre: move qualquer herói para qualquer área, a qualquer momento; não conta como o movimento da rodada.
+ * Regras (spec, decisões 1, 17 e 21):
+ * - Ao entrar no Posicionamento, a área de cada token é registrada (rodada.inicio).
+ * - Enquanto a etapa durar, cada jogador move livremente o próprio herói, desde que termine a no máximo
+ *   uma área da posição em que começou a rodada (pode avançar, voltar, mudar de ideia).
+ * - Grupo junto (padrão): qualquer jogador com herói na batalha move o grupo inteiro.
+ * - Lobos solitários: cada herói se move sozinho.
+ * - Heróis mortos ficam onde caíram: não se movem com o grupo e só o mestre os move.
+ * - Mestre: move qualquer herói para qualquer área, a qualquer momento.
  */
 import { completarEstado } from "./estado.js";
 import { movimentoValido } from "./regras.js";
 import { POSICOES } from "./constantes.js";
 
-export const MARCA_GRUPO = "grupo";
+const vivo = (h) => !h.morto;
 
-/** Área atual de um herói (com o grupo junto, a área do grupo). */
+/** Área atual de um herói (com o grupo junto, a área do grupo; morto, onde caiu). */
 export function areaAtual(estado, uuid) {
 	const h = estado.herois.find((x) => x.uuid === uuid);
 	if (!h) return null;
-	return estado.opcionais.lobosSolitarios ? (h.area ?? estado.grupoArea) : estado.grupoArea;
+	if (h.morto || estado.opcionais.lobosSolitarios) return h.area ?? estado.grupoArea;
+	return estado.grupoArea;
 }
 
-/** O movimento da rodada já foi usado (pelo grupo, ou por este herói com Lobos solitários)? */
-export function jaMoveu(estado, uuid) {
-	const movidos = estado.rodada?.movidos ?? [];
-	return estado.opcionais.lobosSolitarios ? movidos.includes(uuid) : movidos.includes(MARCA_GRUPO);
+/** Fotografia das posições no início do Posicionamento (rodada.inicio). */
+export function registrarInicio(salvo) {
+	const e = completarEstado(salvo);
+	e.rodada.inicio = {
+		grupo: e.grupoArea,
+		herois: Object.fromEntries(e.herois.map((h) => [h.uuid, areaAtual(e, h.uuid)]))
+	};
+	return e;
+}
+
+/** Área em que o herói começou a rodada (sem registro, a atual). */
+export function areaInicial(estado, uuid) {
+	const inicio = estado.rodada?.inicio;
+	if (!inicio) return areaAtual(estado, uuid);
+	if (!estado.opcionais.lobosSolitarios) return inicio.grupo ?? areaAtual(estado, uuid);
+	return inicio.herois?.[uuid] ?? areaAtual(estado, uuid);
 }
 
 /**
  * Valida um pedido de movimento.
- * @param {object} salvo
- * @param {string} uuid        herói
- * @param {number} para        área de destino (0–3)
- * @param {object} quem
- * @param {boolean} quem.ehGM
- * @param {boolean} [quem.dono]  o usuário é dono do ator do herói
  * @returns {{ ok: boolean, motivo?: string }}  motivo = chave de i18n em Posicionamento.Motivos
  */
 export function validarMovimento(salvo, uuid, para, { ehGM, dono = false }) {
 	const e = completarEstado(salvo);
+	const heroi = e.herois.find((x) => x.uuid === uuid);
 	const de = areaAtual(e, uuid);
 	if (de === null) return { ok: false, motivo: "NaoEsta" };
 	if (!Number.isInteger(para) || para < 0 || para >= POSICOES.length) return { ok: false, motivo: "AreaInvalida" };
@@ -46,48 +56,65 @@ export function validarMovimento(salvo, uuid, para, { ehGM, dono = false }) {
 	if (e.fim) return { ok: false, motivo: "Encerrada" };
 	if (ehGM) return { ok: true };
 	if (!dono) return { ok: false, motivo: "NaoDono" };
+	if (heroi.morto) return { ok: false, motivo: "Morto" };
 	if (e.etapa !== "posicionamento") return { ok: false, motivo: "ForaDaEtapa" };
-	if (jaMoveu(e, uuid)) return { ok: false, motivo: "JaMoveu" };
-	if (!movimentoValido(de, para)) return { ok: false, motivo: "UmaArea" };
+	if (!movimentoValido(areaInicial(e, uuid), para)) return { ok: false, motivo: "UmaArea" };
 	return { ok: true };
 }
 
-/**
- * Aplica um movimento já validado. Devolve o novo estado (cópia).
- * Com o grupo junto, move todos os heróis; o movimento do jogador marca a rodada.
- */
-export function moverHeroi(salvo, uuid, para, { ehGM }) {
+/** Aplica um movimento já validado. Com o grupo junto, move todos os heróis vivos. */
+export function moverHeroi(salvo, uuid, para) {
 	const e = completarEstado(salvo);
-	if (e.opcionais.lobosSolitarios) {
+	const alvo = e.herois.find((h) => h.uuid === uuid);
+	if (e.opcionais.lobosSolitarios || alvo?.morto) {
 		e.herois = e.herois.map((h) => (h.uuid === uuid ? { ...h, area: para } : h));
-		if (!ehGM) e.rodada.movidos = [...new Set([...e.rodada.movidos, uuid])];
 	} else {
 		e.grupoArea = para;
-		e.herois = e.herois.map((h) => ({ ...h, area: para }));
-		if (!ehGM) e.rodada.movidos = [...new Set([...e.rodada.movidos, MARCA_GRUPO])];
+		e.herois = e.herois.map((h) => (vivo(h) ? { ...h, area: para } : h));
 	}
 	return e;
 }
 
 /**
- * Opções de movimento para mostrar a um usuário: para cada herói que ele pode mover agora,
- * as áreas de destino possíveis. O mestre recebe todos os heróis (com o grupo junto, um só representante).
- * @param {object} salvo
- * @param {object} quem
- * @param {boolean} quem.ehGM
- * @param {(uuid: string) => boolean} quem.ehDono
+ * Opções de movimento para a interface: para cada herói que o usuário pode mover agora, as áreas possíveis.
+ * O mestre recebe todos os heróis (com o grupo junto, um representante vivo + os mortos).
  */
 export function opcoesDeMovimento(salvo, { ehGM, ehDono }) {
 	const e = completarEstado(salvo);
 	const lobos = e.opcionais.lobosSolitarios;
-	let herois = e.herois.filter((h) => h.uuid && (ehGM || ehDono(h.uuid)));
-	if (!lobos && herois.length) herois = [herois[0]]; // o grupo anda junto: basta um herói para mover todos
+	let herois = e.herois.filter((h) => h.uuid && (ehGM || (ehDono(h.uuid) && vivo(h))));
+	if (!lobos) {
+		const vivos = herois.filter(vivo);
+		herois = [...vivos.slice(0, 1), ...(ehGM ? herois.filter((h) => h.morto) : [])];
+	}
 	return herois
 		.map((h) => {
 			const de = areaAtual(e, h.uuid);
 			const destinos = POSICOES.map((_, i) => i).filter((para) =>
 				validarMovimento(e, h.uuid, para, { ehGM, dono: true }).ok);
-			return { uuid: h.uuid, nome: h.nome, de, destinos, recuar: destinos.includes(de - 1), avancar: destinos.includes(de + 1) };
+			return {
+				uuid: h.uuid, nome: h.nome, de, inicio: areaInicial(e, h.uuid), morto: !!h.morto,
+				destinos, recuar: destinos.includes(de - 1), avancar: destinos.includes(de + 1)
+			};
 		})
 		.filter((o) => o.destinos.length);
+}
+
+/* ---------------- Heróis: remover e marcar como morto (mestre) ---------------- */
+
+export function removerHeroi(salvo, uuid) {
+	const e = completarEstado(salvo);
+	e.herois = e.herois.filter((h) => h.uuid !== uuid);
+	return e;
+}
+
+/** Marca (ou desfaz) um herói como morto. Morto, ele fica na área onde caiu e solta o estandarte. */
+export function alternarMorto(salvo, uuid) {
+	const e = completarEstado(salvo);
+	e.herois = e.herois.map((h) => {
+		if (h.uuid !== uuid) return h;
+		if (h.morto) return { ...h, morto: false, area: e.opcionais.lobosSolitarios ? h.area : e.grupoArea };
+		return { ...h, morto: true, estandarte: false, area: areaAtual(e, uuid) };
+	});
+	return e;
 }

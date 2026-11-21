@@ -42,6 +42,7 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 		this.aba = "geral";
 		this.alterado = false;
 		this.pontosEditados = [false, false];
+		this.comandoEditado = [false, false];
 	}
 
 	static DEFAULT_OPTIONS = {
@@ -185,6 +186,8 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 		foundry.utils.setProperty(this.rascunho, caminhoCampo, valor);
 		const ponto = caminhoCampo.match(/^exercitos\.(\d)\.pontos$/);
 		if (ponto) this.pontosEditados[Number(ponto[1])] = true;
+		const comando = caminhoCampo.match(/^exercitos\.(\d)\.(general|substituto)/);
+		if (comando) this.comandoEditado[Number(comando[1])] = true;
 		this.alterado = true;
 		if (redesenhar) this.render();
 		else this.#atualizarTitulo();
@@ -220,11 +223,12 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 	static async #salvar() {
 		const atual = lerBatalha(this.idBatalha);
 		if (!atual) return ui.notifications.error(L("Configurador.NaoEncontrada"));
-		const novo = aplicarConfiguracao(atual, this.rascunho, { pontosEditados: this.pontosEditados });
+		const novo = aplicarConfiguracao(atual, this.rascunho, { pontosEditados: this.pontosEditados, comandoEditado: this.comandoEditado });
 		await gravarBatalha(this.idBatalha, novo);
 		this.rascunho = lerBatalha(this.idBatalha);
 		this.alterado = false;
 		this.pontosEditados = [false, false];
+		this.comandoEditado = [false, false];
 		log("batalha salva", this.idBatalha);
 		ui.notifications.info(L("Configurador.Salvo"));
 		this.render();

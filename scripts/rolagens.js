@@ -256,6 +256,24 @@ export async function rolarDerrotaGeneral(estado) {
 	return { pontos: pontos.total, penalidade: penalidade.total };
 }
 
+/**
+ * General removido sem substituto (ou com o substituto já usado): um oficial assume com a Guerra do
+ * anterior −(1d6+1), a regra de general derrotado. Manda o cartão para o chat e devolve a nova Guerra.
+ */
+export async function rolarNovoOficial(estado, lado) {
+	const penalidade = await new Roll(PENALIDADE_NOVO_GENERAL).evaluate();
+	const ex = estado.exercitos[lado];
+	const anterior = Number(ex.general?.guerra) || 0;
+	const guerra = anterior - penalidade.total;
+	await enviarCartao({
+		tipo: "novoOficial",
+		titulo: L("Generais.Remover"),
+		subtitulo: `${ex.nome} · ${ex.general?.nome || retratoVivo(ex.general).nome || ""}`,
+		resultado: L("Evento.NovoGeneral", { nome: L("Evento.Oficial"), guerra: comSinal(guerra), penalidade: penalidade.total })
+	}, [penalidade]);
+	return guerra;
+}
+
 /* =====================================================================
    T11 — Teste dos Generais: 1d20 + bônus discriminado
    ===================================================================== */

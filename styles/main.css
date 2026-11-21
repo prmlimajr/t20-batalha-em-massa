@@ -137,6 +137,14 @@
 	width: 100%;
 }
 
+.t20bm-botao-cenas {
+	flex: 1 1 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+}
+
 /* ---------------- Configurador da batalha (T4) ---------------- */
 
 .t20bm-configurador .window-content {
@@ -1081,6 +1089,50 @@ button.t20bm-icone {
 	cursor: wait;
 }
 
+/* ---------- Heróis mortos e inimigo clicável ---------- */
+
+.t20bm-heroi.morto .t20bm-token { filter: grayscale(1) brightness(0.55); }
+.t20bm-caveira {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	z-index: 1;
+	font-size: 18px;
+	color: #e8e0d0;
+	text-shadow: 0 1px 3px #000;
+	pointer-events: none;
+}
+.t20bm-area-inimigo.clicavel { cursor: pointer; }
+.t20bm-area-inimigo.clicavel:hover { border-color: var(--bm-ouro); }
+
+/* ---------- Transição Evento → Teste dos Generais ---------- */
+
+/* As seções do turno somem: fade (0–0,3 s) e depois recolhem (0,3–0,6 s). */
+.t20bm-secoes-turno { display: flex; flex-direction: column; gap: 22px; }
+.t20bm-secoes-turno.saindo {
+	overflow: hidden;
+	pointer-events: none;
+	animation: t20bm-sair-fade 300ms ease-out forwards, t20bm-sair-altura 300ms 300ms ease-in forwards;
+}
+@keyframes t20bm-sair-fade { to { opacity: 0; } }
+@keyframes t20bm-sair-altura { from { max-height: 1200px; } to { max-height: 0; margin-top: -22px; } }
+/* Os cartões crescem para baixo (slide, 0,3–0,8 s) e o conteúdo aparece 0,3 s depois (1,1 s). */
+.t20bm-teste-general.entrando {
+	overflow: hidden;
+	animation: t20bm-deslizar 500ms 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.t20bm-teste-general.entrando .t20bm-teste-general-conteudo {
+	animation: t20bm-conteudo 400ms 1100ms ease-out both;
+}
+.t20bm-teste-general-conteudo { display: flex; flex-direction: column; gap: 10px; }
+@keyframes t20bm-deslizar { from { max-height: 0; padding-top: 0; padding-bottom: 0; } to { max-height: 700px; } }
+@keyframes t20bm-conteudo { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+	.t20bm-secoes-turno.saindo { display: none; }
+	.t20bm-teste-general.entrando, .t20bm-teste-general.entrando .t20bm-teste-general-conteudo { animation: none; }
+}
+
 /* ---------- Resultado da batalha (T12) ---------- */
 
 .t20bm-fim {
@@ -1185,6 +1237,17 @@ button.t20bm-icone {
 .t20bm-venceu { margin-left: auto; color: var(--bm-ouro); font-weight: 600; }
 .t20bm-aguardando { font-size: 14px; color: var(--bm-texto-suave); }
 .t20bm-cartao-exercito .t20bm-carrossel { order: 9; }
+/* Teste dos Generais: carrossel no topo (logo após as presenças); a seção do teste ocupa o resto do
+   cartão: lista em cima, espaço vazio no meio e o rodapé (total + rolagem) alinhado embaixo. */
+.t20bm-cartao-exercito:has(.t20bm-teste-general) .t20bm-carrossel { margin-top: 0; }
+.t20bm-teste-general { flex: 1 1 auto; }
+.t20bm-teste-general-conteudo { flex: 1 1 auto; }
+.t20bm-teste-rodape {
+	margin-top: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
 .t20bm-cartao-exercito:has(.t20bm-teste-general.venceu) {
 	box-shadow: 0 0 0 2px var(--bm-ouro), 0 0 24px rgba(201, 168, 106, 0.35);
 }
@@ -1450,7 +1513,7 @@ button.t20bm-icone {
 	pointer-events: none;
 	background-size: cover;
 	background-position: center;
-	animation: t20bm-ab-fundo 3000ms ease-out both;
+	animation: t20bm-ab-fundo var(--t20bm-duracao, 3000ms) ease-out both;
 }
 .t20bm-abertura > * { grid-area: 1 / 1; }
 .t20bm-ab-escuro {
@@ -1466,7 +1529,7 @@ button.t20bm-icone {
 	border-bottom: 2px solid var(--bm-ouro);
 	box-shadow: 0 0 24px rgba(201, 168, 106, 0.45);
 	transform-origin: center;
-	animation: t20bm-ab-faixa 3000ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+	animation: t20bm-ab-faixa var(--t20bm-duracao, 3000ms) cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .t20bm-ab-onda {
 	width: 60px;
@@ -1499,14 +1562,14 @@ button.t20bm-icone {
 	paint-order: stroke fill;
 	text-shadow: 0 2px 0 #1c1408, 0 0 18px rgba(201, 168, 106, 0.75);
 	letter-spacing: 0.03em;
-	animation: t20bm-ab-texto 3000ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+	animation: t20bm-ab-texto var(--t20bm-duracao, 3000ms) cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
 }
 .t20bm-ab-textos {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: 10px;
-	animation: t20bm-ab-texto 3000ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+	animation: t20bm-ab-texto var(--t20bm-duracao, 3000ms) cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
 }
 .t20bm-ab-textos .t20bm-ab-titulo { animation: none; }
 .t20bm-ab-subtitulo {
@@ -1538,7 +1601,7 @@ button.t20bm-icone {
 }
 @media (prefers-reduced-motion: reduce) {
 	.t20bm-ab-onda, .t20bm-ab-faiscas { display: none; }
-	.t20bm-ab-faixa, .t20bm-ab-titulo { animation: t20bm-ab-fundo 3000ms ease-out both; }
+	.t20bm-ab-faixa, .t20bm-ab-titulo { animation: t20bm-ab-fundo var(--t20bm-duracao, 3000ms) ease-out both; }
 }
 
 /* ---------- Cartão de evento (chat) ---------- */

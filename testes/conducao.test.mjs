@@ -54,18 +54,21 @@ assert.equal(podeVoltar(estadoPadrao()), false, "pré-batalha não volta");
 console.log("conducao: ok");
 
 /* Preparação: prontos */
-import { marcarPronto, todosProntos, registrarEvento, registrarInimigo } from "../scripts/conducao.js";
+import { marcarPronto, todosProntos, registrarEvento, registrarInimigo, prontosDa } from "../scripts/conducao.js";
 let p = completarEstado({ etapa: "preparacao" });
 p = marcarPronto(p, "u1");
 p = marcarPronto(p, "u1");
-assert.deepEqual(p.rodada.prontos, ["u1"], "sem repetir");
+assert.deepEqual(prontosDa(p), ["u1"], "sem repetir");
 assert.equal(todosProntos(p, ["u1", "u2"]), false);
 p = marcarPronto(p, "u2");
 assert.equal(todosProntos(p, ["u1", "u2"]), true);
 assert.equal(todosProntos(p, []), false, "sem obrigatórios não avança sozinho");
 p = marcarPronto(p, "u1", false);
-assert.deepEqual(p.rodada.prontos, ["u2"]);
-assert.deepEqual(avancarEtapa(completarEstado({ ...p, etapa: "generais" })).estado.rodada.prontos, [], "zera no turno seguinte");
+assert.deepEqual(prontosDa(p), ["u2"]);
+assert.deepEqual(prontosDa(p, "posicionamento"), [], "cada etapa tem os seus");
+assert.equal(todosProntos(marcarPronto(completarEstado({ etapa: "posicionamento" }), "u1"), ["u1"]), true);
+assert.deepEqual(completarEstado({ rodada: { prontos: ["u7"] } }).rodada.prontos, { preparacao: ["u7"] }, "formato antigo");
+assert.deepEqual(avancarEtapa(completarEstado({ ...p, etapa: "generais" })).estado.rodada.prontos, {}, "zera no turno seguinte");
 
 /* Evento: sorteios por área */
 let ev = registrarEvento(completarEstado({}), 2, { total: 17, chave: "interceptarOrdens", nome: "Interceptar ordens" });

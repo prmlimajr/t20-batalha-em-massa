@@ -1,8 +1,8 @@
 <section class="t20bm-gerenciador-corpo">
 	{{#if algumaExibida}}
 	<div class="t20bm-aviso-exibida">
-		<i class="fa-solid fa-eye"></i> {{localize "T20BM.Gerenciador.AvisoExibida"}}
-		<button type="button" data-action="encerrar"><i class="fa-solid fa-eye-slash"></i> {{localize "T20BM.Gerenciador.Encerrar"}}</button>
+		<i class="fa-solid fa-play"></i> {{localize "T20BM.Gerenciador.AvisoExibida"}}
+		<button type="button" data-action="encerrar"><i class="fa-solid fa-stop"></i> {{localize "T20BM.Gerenciador.Encerrar"}}</button>
 	</div>
 	{{/if}}
 
@@ -20,9 +20,9 @@
 			</div>
 			<div class="t20bm-item-acoes">
 				{{#if exibida}}
-				<button type="button" data-action="encerrar" class="ativo" data-tooltip="T20BM.Gerenciador.Encerrar"><i class="fa-solid fa-eye-slash"></i></button>
+				<button type="button" data-action="encerrar" class="ativo" data-tooltip="T20BM.Gerenciador.Encerrar"><i class="fa-solid fa-stop"></i></button>
 				{{else}}
-				<button type="button" data-action="exibir" data-tooltip="T20BM.Gerenciador.Exibir"><i class="fa-solid fa-eye"></i></button>
+				<button type="button" data-action="exibir" data-tooltip="T20BM.Gerenciador.Exibir"><i class="fa-solid fa-play"></i></button>
 				{{/if}}
 				<button type="button" data-action="visualizar" data-tooltip="{{#if exibida}}T20BM.Gerenciador.Reabrir{{else}}T20BM.Gerenciador.Previa{{/if}}"><i class="fa-solid fa-chess-board"></i></button>
 				<button type="button" data-action="configurar" data-tooltip="T20BM.Gerenciador.Configurar"><i class="fa-solid fa-gear"></i></button>

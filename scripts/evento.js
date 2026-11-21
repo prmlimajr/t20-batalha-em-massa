@@ -99,24 +99,36 @@ export function alternarEstandarte(salvo, uuid) {
 
 /** Bônus dos estandartes no teste de Guerra do general dos heróis. */
 export function bonusEstandartes(salvo) {
-	return completarEstado(salvo).herois.filter((h) => h.estandarte).length * BONUS_ESTANDARTE;
+	return completarEstado(salvo).herois.filter((h) => h.estandarte && !h.morto).length * BONUS_ESTANDARTE;
 }
 
 /* ---------------- Enfrentar general ---------------- */
 
+export const temSubstituto = (ex) => !!(ex?.substituto?.uuid || ex?.substituto?.nome);
+
+/**
+ * O general de um exército sai de cena (removido pelo mestre ou derrotado): o substituto assume, com o
+ * bônus de Guerra informado, e passa a rolar nos próximos Testes dos Generais. Sem substituto, um oficial
+ * sem nome assume. O exército fica sem substituto.
+ */
+export function substituirGeneral(salvo, lado, guerra) {
+	const e = completarEstado(salvo);
+	const ex = e.exercitos[lado];
+	const valor = Math.trunc(Number(guerra) || 0);
+	ex.general = temSubstituto(ex)
+		? { ...ex.substituto, guerra: valor }
+		: { uuid: null, nome: "", img: null, guerra: valor };
+	ex.substituto = { uuid: null, nome: "", img: null };
+	return e;
+}
+
 /**
  * O grupo derrotou o general inimigo: o exército dos heróis ganha `pontos` (1d4+1) e o substituto
- * assume com Guerra = Guerra do anterior − `penalidade` (1d6+1). Sem substituto, o general fica vazio.
+ * assume com Guerra = Guerra do anterior − `penalidade` (1d6+1).
  */
 export function derrotarGeneralInimigo(salvo, area, { pontos, penalidade }) {
-	const e = completarEstado(salvo);
-	const inimigo = e.exercitos[1];
-	const guerraAnterior = Number(inimigo.general?.guerra) || 0;
-	const temSubstituto = !!(inimigo.substituto?.uuid || inimigo.substituto?.nome);
-	inimigo.general = temSubstituto
-		? { ...inimigo.substituto, guerra: guerraAnterior - penalidade }
-		: { uuid: null, nome: "", img: null, guerra: guerraAnterior - penalidade };
-	inimigo.substituto = { uuid: null, nome: "", img: null };
+	const guerraAnterior = Number(completarEstado(salvo).exercitos[1].general?.guerra) || 0;
+	const e = substituirGeneral(salvo, 1, guerraAnterior - penalidade);
 	e.exercitos[0].pontos = (Number(e.exercitos[0].pontos) || 0) + pontos;
 	const ev = e.rodada.eventos?.[area];
 	if (ev) e.rodada.eventos = { ...e.rodada.eventos, [area]: { ...ev, generalDerrotado: { pontos, penalidade, anterior: guerraAnterior } } };

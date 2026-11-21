@@ -25,9 +25,10 @@ function el(tag, classe, texto) {
  * @param {string} [p.subtitulo]      linha menor abaixo do título
  * @param {string|null} [p.imagem]    imagem de fundo (padrão: a de abertura; null = sem imagem)
  * @param {string} [p.classe]         classe extra (ex.: "aliado"/"inimigo" para a cor do anúncio)
+ * @param {number} [p.duracao]        em ms (padrão 3000)
  * @returns {Promise<void>} resolvida quando a animação some
  */
-export function animarAbertura({ container, alvo, texto, subtitulo = "", imagem = caminho("assets/abertura.jpg"), classe = "" }) {
+export function animarAbertura({ container, alvo, texto, subtitulo = "", imagem = caminho("assets/abertura.jpg"), classe = "", duracao = DURACAO_ABERTURA }) {
 	if (!container || !alvo) return Promise.resolve();
 	container.querySelector(":scope > .t20bm-abertura")?.remove();
 
@@ -44,6 +45,7 @@ export function animarAbertura({ container, alvo, texto, subtitulo = "", imagem 
 		...(imagem ? { backgroundImage: `url("${imagem}")` } : {})
 	});
 
+	raiz.style.setProperty("--t20bm-duracao", `${duracao}ms`);
 	raiz.append(el("div", "t20bm-ab-escuro"), el("div", "t20bm-ab-faixa"), el("div", "t20bm-ab-onda"));
 
 	const faiscas = el("div", "t20bm-ab-faiscas");
@@ -64,5 +66,5 @@ export function animarAbertura({ container, alvo, texto, subtitulo = "", imagem 
 	return new Promise((resolve) => setTimeout(() => {
 		raiz.remove();
 		resolve();
-	}, DURACAO_ABERTURA));
+	}, duracao));
 }

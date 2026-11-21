@@ -20,9 +20,9 @@
 			"ReiniciarConfirma": "Reiniciar {nome}? A configuração fica; placar, turno, posições e histórico voltam ao início.",
 			"Apagar": "Apagar",
 			"ApagarConfirma": "Apagar {nome}? Não dá para desfazer.",
-			"Exibir": "Exibir para todos",
+			"Exibir": "Iniciar a batalha para todos",
 			"Encerrar": "Encerrar exibição",
-			"AvisoExibida": "Há uma batalha em exibição para a mesa.",
+			"AvisoExibida": "Há uma batalha em andamento para a mesa.",
 			"NaoIniciada": "não iniciada",
 			"Turno": "turno {n}",
 			"Previa": "Pré-visualizar (só você vê)",
@@ -139,10 +139,10 @@
 				},
 				"posicionamento": {
 					"Titulo": "Escolham sua posição.",
-					"Texto": "O grupo avança, recua ou permanece: uma área por turno. Posições avançadas trazem eventos mais perigosos e maiores recompensas."
+					"Texto": "O grupo avança, recua ou permanece: até uma área de onde o turno começou. Quando todos concluírem, a batalha segue."
 				},
 				"evento": {
-					"Titulo": "O {area} aguarda sua ordem.",
+					"Titulo": "Aguardando sua ordem.",
 					"Texto": "Resolva o confronto e atualize o rumo da batalha."
 				},
 				"generais": {
@@ -151,7 +151,7 @@
 				},
 				"posicionamentoLobos": {
 					"Titulo": "Cada herói escolhe sua posição.",
-					"Texto": "Avance, recue ou permaneça: uma área por turno. Heróis em áreas diferentes enfrentam eventos diferentes."
+					"Texto": "Avance, recue ou permaneça: até uma área de onde o turno começou. Quando todos concluírem, a batalha segue."
 				}
 			},
 			"Iniciar": "Iniciar batalha",
@@ -184,18 +184,16 @@
 			"Grupo": "Grupo",
 			"Recuar": "Recuar",
 			"Avancar": "Avançar",
-			"JaMoveuGrupo": "O grupo já se moveu neste turno.",
-			"JaMoveuHeroi": "Seu herói já se moveu neste turno.",
-			"Dica": "Arraste o token para a área vizinha ou use os botões. Uma área por turno.",
+			"Dica": "Arraste o token ou use os botões: até uma área à frente ou atrás de onde o turno começou. Dá para mudar de ideia enquanto a etapa durar.",
 			"Motivos": {
 				"NaoEsta": "Esse herói não está na batalha.",
 				"AreaInvalida": "Área inválida.",
 				"MesmaArea": "O herói já está nessa área.",
 				"NaoDono": "Você só pode mover o seu herói.",
 				"ForaDaEtapa": "Só é possível mover na etapa de Posicionamento.",
-				"JaMoveu": "O movimento deste turno já foi feito.",
-				"UmaArea": "Só é possível avançar ou recuar uma área por turno.",
-				"Encerrada": "A batalha já terminou."
+				"UmaArea": "Só é possível ficar até uma área à frente ou atrás de onde o turno começou.",
+				"Encerrada": "A batalha já terminou.",
+				"Morto": "Esse herói está morto."
 			}
 		},
 		"Preparacao": {
@@ -224,7 +222,8 @@
 			"Ajuste": "Posicionamento avançado: ajuste na rolagem do evento",
 			"Oficial": "Um oficial",
 			"GanhaPontos": "{exercito} ganha {pontos} pontos de vitória.",
-			"NovoGeneral": "{nome} assume o exército inimigo com Guerra {guerra} (−{penalidade})."
+			"NovoGeneral": "{nome} assume o exército inimigo com Guerra {guerra} (−{penalidade}).",
+			"AbrirFichaInimigo": "Abrir a ficha do inimigo (para as rolagens de ataque)"
 		},
 		"Generais": {
 			"Cartao": "Teste dos Generais",
@@ -248,7 +247,16 @@
 			"Fim": {
 				"destruicao": "{exercito} vence a batalha: o exército adversário foi aniquilado.",
 				"fuga": "{exercito} vence a batalha: o exército adversário fugiu."
-			}
+			},
+			"Resetar": "Refazer teste",
+			"ResetarConfirma": "Refazer o Teste dos Generais desta rodada? As rolagens são apagadas e o resultado (pontos, fuga, fim) é desfeito.",
+			"MenuDica": "Clique direito: remover o general da cena (o substituto assume)",
+			"Remover": "Remover general",
+			"SemNome": "o general",
+			"RemoverTexto": "{atual} sai de cena. {novo} assume o comando e rola nos próximos Testes dos Generais.",
+			"GuerraNovo": "Bônus de Guerra de {novo}",
+			"GuerraNovoDica": "Guerra na ficha do substituto: {ficha}. Sem ficha, o campo vem com o bônus do general anterior.",
+			"RemoverSemSubstituto": "{atual} sai de cena e não há substituto disponível. Um oficial assume o comando com a Guerra do general anterior −1d6−1 ({min} a {max}), rolada agora."
 		},
 		"Fim": {
 			"Resultado": "Fim da batalha",
@@ -277,6 +285,19 @@
 			"DeclararDica": "Encerrar a batalha: um dos generais desistiu do confronto",
 			"DeclararTexto": "Um dos generais desistiu do confronto. Qual exército vence a batalha?",
 			"Cancelar": "Cancelar"
+		},
+		"Prontos": {
+			"Concluir": {
+				"preparacao": "Concluí minha preparação",
+				"posicionamento": "Concluí meu posicionamento"
+			}
+		},
+		"Herois": {
+			"MenuTexto": "O que fazer com {nome}?",
+			"MarcarMorto": "Marcar como morto",
+			"Reviver": "Desmarcar morto",
+			"Remover": "Remover da batalha",
+			"Morto": "Morto"
 		}
 	}
 }

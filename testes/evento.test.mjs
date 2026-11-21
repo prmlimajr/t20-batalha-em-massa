@@ -79,4 +79,13 @@ assert.deepEqual(g.rodada.eventos[3].generalDerrotado, { pontos: 4, penalidade: 
 const semSub = derrotarGeneralInimigo(completarEstado({ exercitos: [{}, { general: { nome: "X", guerra: 3 } }] }), 0, { pontos: 2, penalidade: 2 });
 assert.deepEqual([semSub.exercitos[1].general.nome, semSub.exercitos[1].general.guerra], ["", 1]);
 
+/* Mestre remove o general: o substituto assume */
+import { substituirGeneral, temSubstituto } from "../scripts/evento.js";
+let sg = completarEstado({ exercitos: [{ general: { uuid: "Actor.ay", nome: "Ayleth", guerra: 17 }, substituto: { uuid: "Actor.nm", nome: "Nobre Menor", img: "n.png" } }, {}] });
+assert.equal(temSubstituto(sg.exercitos[0]), true);
+sg = substituirGeneral(sg, 0, "12");
+assert.deepEqual(sg.exercitos[0].general, { uuid: "Actor.nm", nome: "Nobre Menor", img: "n.png", guerra: 12 });
+assert.equal(temSubstituto(sg.exercitos[0]), false);
+sg = substituirGeneral(sg, 0, 8); // sem substituto: um oficial sem nome
+assert.deepEqual(sg.exercitos[0].general, { uuid: null, nome: "", img: null, guerra: 8 });
 console.log("evento: ok");

@@ -16,7 +16,7 @@
 					<button type="button" data-action="encerrar" data-tooltip="T20BM.Modal.EncerrarDica"><i class="fa-solid fa-eye-slash"></i> {{localize "T20BM.Gerenciador.Encerrar"}}</button>
 					{{else}}
 					<span class="t20bm-previa-aviso"><i class="fa-solid fa-user-secret"></i> {{localize "T20BM.Modal.SoVoce"}}</span>
-					<button type="button" data-action="exibir"><i class="fa-solid fa-eye"></i> {{localize "T20BM.Gerenciador.Exibir"}}</button>
+					<button type="button" data-action="exibir"><i class="fa-solid fa-play"></i> {{localize "T20BM.Gerenciador.Exibir"}}</button>
 					{{/if}}
 					<button type="button" class="t20bm-icone" data-action="configurar" data-tooltip="T20BM.Gerenciador.Configurar"><i class="fa-solid fa-gear"></i></button>
 					<button type="button" class="t20bm-icone" data-action="fecharLocal" data-tooltip="T20BM.Modal.FecharParaMim"><i class="fa-solid fa-xmark"></i></button>
@@ -89,9 +89,9 @@
 
 				<div class="t20bm-comando">
 					{{#if general}}
-					<img class="t20bm-token general {{#if general.podeVer}}clicavel{{/if}}" src="{{general.img}}" alt="{{general.nome}}" {{#if general.podeVer}}data-action="abrirFicha" data-uuid="{{general.uuid}}"{{/if}}>
+					<img class="t20bm-token general {{#if general.podeVer}}clicavel{{/if}}" src="{{general.img}}" alt="{{general.nome}}" data-lado="{{@index}}" {{#if @root.gm}}data-tooltip="T20BM.Generais.MenuDica"{{/if}} {{#if general.podeVer}}data-action="abrirFicha" data-uuid="{{general.uuid}}"{{/if}}>
 					{{else}}
-					<span class="t20bm-token general vazio"></span>
+					<span class="t20bm-token general vazio" data-lado="{{@index}}"></span>
 					{{/if}}
 					<div class="t20bm-comando-nomes">
 						<span class="t20bm-sobretitulo">{{localize "T20BM.Configurador.General"}}</span>
@@ -134,11 +134,13 @@
 				</div>
 
 				{{#if teste}}
-				<section class="t20bm-teste-general {{#if teste.venceu}}venceu{{/if}}">
+				<section class="t20bm-teste-general {{#if teste.venceu}}venceu{{/if}} {{#if @root.transicaoGenerais}}entrando{{/if}}">
+					<div class="t20bm-teste-general-conteudo">
 					<span class="t20bm-sobretitulo">{{localize "T20BM.Generais.Composicao"}}</span>
 					<ul class="t20bm-composicao">
 						{{#each teste.itens}}<li><b>{{valorTxt}}</b> {{texto}}</li>{{/each}}
 					</ul>
+					<div class="t20bm-teste-rodape">
 					<div class="t20bm-composicao-total"><span>{{localize "T20BM.Generais.Total"}}</span><b>{{teste.totalTxt}}</b></div>
 					{{#if teste.rolagem}}
 					<div class="t20bm-rolagem-general">
@@ -153,6 +155,8 @@
 					{{else}}
 					<span class="t20bm-aguardando"><i class="fa-solid fa-hourglass-half"></i> {{localize "T20BM.Generais.Aguardando" nome=teste.quem}}</span>
 					{{/if}}
+					</div>
+					</div>
 				</section>
 				{{/if}}
 				<footer class="t20bm-carrossel">
@@ -166,7 +170,8 @@
 			{{/each}}
 		</section>
 
-		{{#unless faseGenerais}}
+		{{#if mostrarSecoesTurno}}
+		<div class="t20bm-secoes-turno {{#if transicaoGenerais}}saindo{{/if}}">
 		{{!-- ============ Progresso do turno ============ --}}
 		<section class="t20bm-progresso">
 			<span class="t20bm-sobretitulo">{{localize "T20BM.Modal.Progresso"}}</span>
@@ -203,10 +208,11 @@
 					<h3>{{nome}}</h3>
 					<span class="t20bm-sobretitulo">{{subtitulo}}</span>
 					{{#if evento}}<span class="t20bm-area-evento" data-tooltip="{{evento.total}}"><i class="fa-solid fa-dice-d20"></i> {{evento.nome}} <b>{{bonusTxt}}</b></span>{{/if}}
-					{{#if inimigo}}<span class="t20bm-area-inimigo">{{#if inimigo.img}}<img src="{{inimigo.img}}" alt="">{{/if}} {{inimigo.nome}}</span>{{/if}}
+					{{#if inimigo}}<span class="t20bm-area-inimigo {{#if inimigo.podeVer}}clicavel{{/if}}" {{#if inimigo.podeVer}}data-action="abrirFicha" data-uuid="{{inimigo.uuid}}" data-tooltip="T20BM.Evento.AbrirFichaInimigo"{{/if}}>{{#if inimigo.img}}<img src="{{inimigo.img}}" alt="">{{/if}} {{inimigo.nome}}</span>{{/if}}
 					<div class="t20bm-herois">
 						{{#each herois}}
-						<span class="t20bm-heroi">
+						<span class="t20bm-heroi {{#if morto}}morto{{/if}}">
+						{{#if morto}}<i class="fa-solid fa-skull t20bm-caveira" data-tooltip="T20BM.Herois.Morto"></i>{{/if}}
 						{{#if estandarte}}<i class="fa-solid fa-flag t20bm-bandeira" data-tooltip="T20BM.Evento.SeguraEstandarte"></i>{{/if}}
 						<img class="t20bm-token heroi {{#if podeVer}}clicavel{{/if}} {{#if arrastavel}}arrastavel{{/if}}" src="{{img}}" alt="{{nome}}" data-tooltip="{{nome}}" data-heroi="{{uuid}}" {{#if arrastavel}}draggable="true" data-destinos="{{destinos}}"{{/if}} {{#if podeVer}}data-action="abrirFicha" data-uuid="{{uuid}}"{{/if}}>
 						</span>
@@ -260,24 +266,25 @@
 		</section>
 		{{/if}}
 
-		{{/unless}}
+		</div>
+		{{/if}}
 
 		{{!-- ============ Rodapé ============ --}}
 		<footer class="t20bm-rodape-tabuleiro">
 			<div>
 				<h2>{{mensagemTitulo}}</h2>
 				<p>{{mensagemTexto}}</p>
-				{{#if preparacao.mostrar}}
+				{{#if prontos.mostrar}}
 				<div class="t20bm-prontos">
-					<span class="t20bm-sobretitulo">{{localize "T20BM.Preparacao.Prontos" quantos=preparacao.quantos total=preparacao.total}}</span>
+					<span class="t20bm-sobretitulo">{{localize "T20BM.Preparacao.Prontos" quantos=prontos.quantos total=prontos.total}}</span>
 					<ul>
-						{{#each preparacao.jogadores}}<li class="{{#if pronto}}pronto{{/if}}"><i class="fa-solid {{#if pronto}}fa-circle-check{{else}}fa-hourglass-half{{/if}}"></i> {{nome}}</li>{{/each}}
+						{{#each prontos.jogadores}}<li class="{{#if pronto}}pronto{{/if}}"><i class="fa-solid {{#if pronto}}fa-circle-check{{else}}fa-hourglass-half{{/if}}"></i> {{nome}}</li>{{/each}}
 					</ul>
-					{{#if preparacao.euObrigatorio}}
-					{{#if preparacao.euPronto}}
+					{{#if prontos.euObrigatorio}}
+					{{#if prontos.euPronto}}
 					<button type="button" data-action="pronto" data-pronto="false"><i class="fa-solid fa-rotate-left"></i> {{localize "T20BM.Preparacao.Desfazer"}}</button>
 					{{else}}
-					<button type="button" class="t20bm-principal" data-action="pronto" data-pronto="true"><i class="fa-solid fa-check"></i> {{localize "T20BM.Preparacao.Concluir"}}</button>
+					<button type="button" class="t20bm-principal" data-action="pronto" data-pronto="true"><i class="fa-solid fa-check"></i> {{prontos.rotuloConcluir}}</button>
 					{{/if}}
 					{{/if}}
 				</div>
@@ -290,8 +297,6 @@
 						{{#if recuar}}<button type="button" data-action="mover" data-heroi="{{uuid}}" data-para="{{paraRecuar}}"><i class="fa-solid fa-arrow-left"></i> {{localize "T20BM.Posicionamento.Recuar"}}</button>{{/if}}
 						{{#if avancar}}<button type="button" data-action="mover" data-heroi="{{uuid}}" data-para="{{paraAvancar}}">{{localize "T20BM.Posicionamento.Avancar"}} <i class="fa-solid fa-arrow-right"></i></button>{{/if}}
 					</div>
-					{{else}}
-					<span class="t20bm-movimento-feito"><i class="fa-solid fa-check"></i> {{#if movimento.lobos}}{{localize "T20BM.Posicionamento.JaMoveuHeroi"}}{{else}}{{localize "T20BM.Posicionamento.JaMoveuGrupo"}}{{/if}}</span>
 					{{/each}}
 					<span class="t20bm-movimento-dica">{{localize "T20BM.Posicionamento.Dica"}}</span>
 				</div>
@@ -306,6 +311,7 @@
 				{{/if}}
 				<button type="button" class="t20bm-principal" data-action="avancar" {{#if ocupado}}disabled{{/if}}>{{localize "T20BM.Modal.Iniciar"}} <i class="fa-solid fa-arrow-right"></i></button>
 				{{else}}
+				{{#if podeResetarGenerais}}<button type="button" data-action="resetarGenerais" {{#if ocupado}}disabled{{/if}}><i class="fa-solid fa-dice"></i> {{localize "T20BM.Generais.Resetar"}}</button>{{/if}}
 				{{#if podeDeclarar}}<button type="button" class="t20bm-icone" data-action="declararVencedor" data-tooltip="T20BM.Fim.DeclararDica"><i class="fa-solid fa-flag-checkered"></i></button>{{/if}}
 				{{#if podeVoltar}}<button type="button" data-action="voltar" {{#if ocupado}}disabled{{/if}}><i class="fa-solid fa-arrow-left"></i> {{localize "T20BM.Modal.Voltar"}}</button>{{/if}}
 				<button type="button" class="t20bm-principal" data-action="avancar" {{#if ocupado}}disabled{{/if}}>{{localize "T20BM.Modal.Avancar"}} <i class="fa-solid fa-arrow-right"></i></button>

@@ -62,7 +62,7 @@ export function composicaoBonus(salvo, lado) {
 	}
 	if (lado === 0) {
 		for (const area of Object.keys(e.rodada.eventos ?? {})) itens.push(...itensDoEvento(e, Number(area)));
-		for (const h of e.herois.filter((x) => x.estandarte)) {
+		for (const h of e.herois.filter((x) => x.estandarte && !x.morto)) {
 			itens.push({ valor: BONUS_ESTANDARTE, texto: `por ${h.nome || "um herói"} segurar o estandarte do exército` });
 		}
 	}
@@ -113,6 +113,7 @@ export function registrarRolagem(salvo, lado, { d20, por = null }) {
 		e.rodada.resultadoGenerais = { empate: true, totais: [a.total, b.total], vez: (e.rodada.resultadoGenerais?.vez ?? 0) + 1 };
 		return { estado: e, resolvido: false, resultado: e.rodada.resultadoGenerais };
 	}
+	const fugindoAntes = e.fugindo;
 	e.exercitos[r.vencedor].pontos = (Number(e.exercitos[r.vencedor].pontos) || 0) + r.pontos;
 	const pontos = [Number(e.exercitos[0].pontos) || 0, Number(e.exercitos[1].pontos) || 0];
 	const fim = verificarFimRodada({ pontos, limiar: limiarVitoria(e.tamanho, e.opcionais.limiarVariado), fugindo: e.fugindo });
@@ -120,9 +121,30 @@ export function registrarRolagem(salvo, lado, { d20, por = null }) {
 	if (fim.fim) e.fim = { tipo: fim.fim, vencedor: fim.vencedor, turno: e.turno };
 	const resultado = {
 		vencedor: r.vencedor, pontos: r.pontos, diferenca: r.diferenca, totais: [a.total, b.total],
-		desempateBonus: a.total === b.total, fugindo: fim.fugindo, fugaInterrompida: fim.fugaInterrompida, fim: fim.fim
+		desempateBonus: a.total === b.total, fugindo: fim.fugindo, fugaInterrompida: fim.fugaInterrompida, fim: fim.fim,
+		fugindoAntes // para refazer o teste
 	};
 	e.rodada.resultadoGenerais = resultado;
 	e.historico = [...e.historico, { turno: e.turno, rolagens: [a, b], ...resultado, placar: pontos }];
 	return { estado: e, resolvido: true, resultado };
+}
+
+/**
+ * Refaz o Teste dos Generais da rodada (mestre): apaga as rolagens e desfaz o resultado
+ * (pontos, histórico do turno, fuga e fim causados por ele). Quem rola pelo general aliado continua o mesmo.
+ */
+export function resetarGenerais(salvo) {
+	const e = completarEstado(salvo);
+	const r = e.rodada.resultadoGenerais;
+	if (r && !r.empate && r.vencedor !== undefined) {
+		const ex = e.exercitos[r.vencedor];
+		ex.pontos = (Number(ex.pontos) || 0) - (Number(r.pontos) || 0);
+		const i = e.historico.findLastIndex((h) => h.turno === e.turno);
+		if (i >= 0) e.historico = e.historico.filter((_, j) => j !== i);
+		e.fugindo = r.fugindoAntes ?? null;
+		if (e.fim && e.fim.tipo !== "desistencia" && e.fim.turno === e.turno) e.fim = null;
+	}
+	e.rodada.generais = {};
+	e.rodada.resultadoGenerais = null;
+	return e;
 }

@@ -98,3 +98,12 @@ assert.equal(comEventos.areas[2].herois[0].estandarte, true);
 assert.equal(comEventos.areas[1].bonusTxt, "", "área sem evento: sem bônus");
 assert.equal(visaoBatalha({}).resolucoes.length, 0);
 console.log("visao (resolução): ok");
+
+/* Substituto que assumiu sai da área de substituto */
+import { substituirGeneral } from "../scripts/evento.js";
+const trocado = visaoBatalha(substituirGeneral(completarEstado({
+	exercitos: [{ general: { nome: "Ayleth", guerra: 17 }, substituto: { uuid: "Actor.nm", nome: "Nobre Menor", img: "n.png" } }, {}]
+}), 0, 12));
+assert.equal(trocado.exercitos[0].general.nome, "Nobre Menor");
+assert.equal(trocado.exercitos[0].substituto, null, "não aparece mais como substituto");
+console.log("visao (substituto assumiu): ok");

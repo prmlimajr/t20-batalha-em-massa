@@ -5,6 +5,7 @@
 import { MODIFICADORES_GUERRA, ETAPA_PRE, ETAPAS } from "./constantes.js";
 import { completarEstado, novaRodada } from "./estado.js";
 import { proximaEtapa, etapaAnterior, motivacao } from "./regras.js";
+import { registrarInicio } from "./posicionamento.js";
 
 const modificadorB2 = (chave, valor) => {
 	const m = MODIFICADORES_GUERRA.find((x) => x.chave === chave);
@@ -54,7 +55,9 @@ export function avancarEtapa(salvo) {
 	e.etapa = prox.etapa;
 	e.turno = prox.turno;
 	if (prox.novaRodada) e.rodada = novaRodada();
-	return { estado: e, entrou: e.etapa, novoTurno: prox.novaRodada };
+	// Posicionamento: registra onde cada token começa (o movimento é medido a partir daqui).
+	const final = e.etapa === "posicionamento" ? registrarInicio(e) : e;
+	return { estado: final, entrou: e.etapa, novoTurno: prox.novaRodada };
 }
 
 /** Volta uma etapa dentro do turno (não volta para antes da Preparação nem para a pré-batalha). */
@@ -67,21 +70,30 @@ export function voltarEtapa(salvo) {
 	return { estado: e, mudou };
 }
 
-/* ---------------- Preparação: jogadores prontos ---------------- */
+/* ---------------- Preparação e Posicionamento: jogadores prontos ---------------- */
 
-/** Marca (ou desmarca) que um jogador concluiu a Preparação. */
-export function marcarPronto(salvo, userId, pronto = true) {
+/** Etapas em que cada jogador marca que concluiu, e a etapa avança quando todos marcam. */
+export const ETAPAS_COM_PRONTOS = ["preparacao", "posicionamento"];
+
+/** Marca (ou desmarca) que um jogador concluiu a etapa atual (ou a informada). */
+export function marcarPronto(salvo, userId, pronto = true, etapa = null) {
 	const e = completarEstado(salvo);
-	const atuais = new Set(e.rodada.prontos);
+	const chave = etapa ?? e.etapa;
+	const atuais = new Set(e.rodada.prontos?.[chave] ?? []);
 	if (pronto) atuais.add(userId);
 	else atuais.delete(userId);
-	e.rodada.prontos = [...atuais];
+	e.rodada.prontos = { ...e.rodada.prontos, [chave]: [...atuais] };
 	return e;
 }
 
-/** Todos os jogadores obrigatórios marcaram? (Sem obrigatórios, nunca avança sozinho.) */
-export function todosProntos(salvo, obrigatorios) {
-	const prontos = new Set(completarEstado(salvo).rodada.prontos);
+export const prontosDa = (salvo, etapa = null) => {
+	const e = completarEstado(salvo);
+	return e.rodada.prontos?.[etapa ?? e.etapa] ?? [];
+};
+
+/** Todos os jogadores obrigatórios marcaram a etapa atual? (Sem obrigatórios, nunca avança sozinho.) */
+export function todosProntos(salvo, obrigatorios, etapa = null) {
+	const prontos = new Set(prontosDa(salvo, etapa));
 	return obrigatorios.length > 0 && obrigatorios.every((id) => prontos.has(id));
 }
 

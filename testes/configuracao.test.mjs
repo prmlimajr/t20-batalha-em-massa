@@ -144,3 +144,17 @@ console.log("token e áreas: ok");
 assert.equal(estadoPadrao().opcionais.preBatalha, false, "pré-batalha desligada por padrão");
 assert.equal("rolandoPelosGenerais" in completarEstado({ opcionais: { rolandoPelosGenerais: true } }).opcionais, false);
 console.log("pré-batalha opcional: ok");
+
+/* Batalha em andamento: configurador não ressuscita general/substituto trocados em jogo */
+const emJogo = completarEstado({ iniciada: true, exercitos: [
+	{ general: { uuid: "Actor.nm", nome: "Nobre Menor", guerra: 12 }, substituto: { uuid: null, nome: "", img: null } }, {}
+] });
+const rascunhoAntigo = completarEstado({ iniciada: true, exercitos: [
+	{ general: { uuid: "Actor.ay", nome: "Ayleth", guerra: 17 }, substituto: { uuid: "Actor.nm", nome: "Nobre Menor" } }, {}
+] });
+let cfg = aplicarConfiguracao(emJogo, rascunhoAntigo, { comandoEditado: [false, false] });
+assert.equal(cfg.exercitos[0].general.nome, "Nobre Menor", "sem edição: mantém o substituto que assumiu");
+assert.equal(cfg.exercitos[0].substituto.nome, "");
+cfg = aplicarConfiguracao(emJogo, rascunhoAntigo, { comandoEditado: [true, false] });
+assert.equal(cfg.exercitos[0].general.nome, "Ayleth", "editado pelo mestre: vale o configurador");
+console.log("comando em jogo: ok");

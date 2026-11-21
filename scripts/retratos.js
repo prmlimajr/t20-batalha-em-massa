@@ -19,7 +19,8 @@ export function retratoVivo(retrato, { comGuerra = false } = {}) {
 		img: (ator && imagemDoAtor(ator)) ?? r.img ?? null,
 		temAtor: !!r.uuid,
 		atorSumiu: !!r.uuid && !ator,
-		podeVer: !!ator?.testUserPermission?.(game.user, "OBSERVER"),
+		// Atores de compêndio vêm como índice (sem permissões): o mestre sempre pode abrir.
+		podeVer: ator?.testUserPermission ? ator.testUserPermission(game.user, "OBSERVER") : !!(ator && game.user.isGM),
 		vazio: !r.uuid && !r.nome && !r.img
 	};
 	if (comGuerra) {

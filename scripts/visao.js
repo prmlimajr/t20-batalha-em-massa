@@ -31,7 +31,8 @@ export function etapasDoTurno(etapa) {
 
 /** Área de cada herói: com Lobos solitários, a própria; senão, a do grupo. */
 export function areaDoHeroi(estado, heroi) {
-	return estado.opcionais.lobosSolitarios ? (heroi.area ?? estado.grupoArea) : estado.grupoArea;
+	// Morto: fica onde caiu.
+	return estado.opcionais.lobosSolitarios || heroi.morto ? (heroi.area ?? estado.grupoArea) : estado.grupoArea;
 }
 
 /** Modificadores para o carrossel: "Superioridade numérica +2". */

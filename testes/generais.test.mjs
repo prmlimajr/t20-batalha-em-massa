@@ -91,3 +91,19 @@ assert.equal(podeRolar(r.estado, 0, { ehGM: true }), false, "batalha encerrada")
 assert.equal(reiniciarBatalha(r.estado).fim, null);
 
 console.log("generais: ok");
+
+/* Refazer o Teste dos Generais */
+import { resetarGenerais } from "../scripts/generais.js";
+let rr = registrarRolagem(registrarRolagem(batalha(), 0, { d20: 8 }).estado, 1, { d20: 4 }); // aliado +2
+assert.deepEqual([rr.estado.exercitos[0].pontos, rr.estado.historico.length], [6, 1]);
+let z = resetarGenerais(rr.estado);
+assert.deepEqual([z.exercitos[0].pontos, z.exercitos[1].pontos, z.historico.length], [4, 2, 0], "pontos e histórico desfeitos");
+assert.deepEqual([z.rodada.generais, z.rodada.resultadoGenerais, z.rodada.rolaGeneral], [{}, null, "u1"]);
+assert.equal(podeRolar(z, 0, { ehGM: true }), true);
+// Desfaz também a fuga e o fim causados pelo teste
+rr = registrarRolagem(registrarRolagem(batalha({ exercitos: [{ pontos: 9, general: { guerra: 9 } }, { pontos: 2, general: { guerra: 0 } }] }), 0, { d20: 10 }).estado, 1, { d20: 1 });
+assert.ok(rr.estado.fim);
+z = resetarGenerais(rr.estado);
+assert.deepEqual([z.fim, z.exercitos[0].pontos, z.fugindo], [null, 9, null]);
+assert.deepEqual(resetarGenerais(batalha()).rodada.generais, {}, "sem resultado: só limpa");
+console.log("refazer generais: ok");

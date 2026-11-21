@@ -28,33 +28,31 @@ function registrarConfiguracoes() {
 	});
 }
 
-/* ---------------- Botão nos controles da cena ---------------- */
+/* ---------------- Botão no diretório de Cenas ---------------- */
 
-function adicionarBotaoControles(controles) {
+/** "Batalhas em Massa" no topo do diretório de Cenas (só o mestre). */
+function adicionarBotaoCenas(app, html) {
 	if (!game.user.isGM) return;
-	try {
-		// v13+: controles é um objeto { tokens: { tools: {...} }, ... }
-		const tokens = controles.tokens ?? controles.token;
-		if (!tokens?.tools) return;
-		tokens.tools.t20bmGerenciador = {
-			name: "t20bmGerenciador",
-			title: L("Gerenciador.Titulo"),
-			icon: "fa-solid fa-chess-rook",
-			order: Object.keys(tokens.tools).length,
-			button: true,
-			visible: true,
-			onChange: () => GerenciadorBatalhas.abrir()
-		};
-	} catch (erro) {
-		console.warn(`${MODULE_ID} | não foi possível adicionar o botão aos controles`, erro);
-	}
+	const raiz = html instanceof HTMLElement ? html : html?.[0];
+	if (!raiz || raiz.querySelector(".t20bm-botao-cenas")) return;
+	const botao = document.createElement("button");
+	botao.type = "button";
+	botao.className = "t20bm-botao-cenas";
+	botao.innerHTML = `<i class="fa-solid fa-chess-rook"></i> ${L("Gerenciador.Titulo")}`;
+	botao.addEventListener("click", (ev) => {
+		ev.preventDefault();
+		GerenciadorBatalhas.abrir();
+	});
+	// v13+: ações do cabeçalho em .header-actions; senão, no início do cabeçalho do diretório.
+	const destino = raiz.querySelector(".header-actions") ?? raiz.querySelector(".directory-header") ?? raiz;
+	destino.append(botao);
 }
 
 /* ---------------- Hooks ---------------- */
 
 Hooks.once("init", () => {
 	registrarConfiguracoes();
-	Hooks.on("getSceneControlButtons", adicionarBotaoControles);
+	Hooks.on("renderSceneDirectory", adicionarBotaoCenas);
 	Hooks.on(armazenamento.HOOK_BATALHAS, () => GerenciadorBatalhas.atualizar());
 	Hooks.on(armazenamento.HOOK_EXIBIDA, (id) => {
 		GerenciadorBatalhas.atualizar();
