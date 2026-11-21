@@ -1,0 +1,19 @@
+{
+	"T20BM": {
+		"Titulo": "Batalha em Massa",
+		"SistemaIncompativel": "T20 — Batalha em Massa funciona apenas com o sistema Tormenta20.",
+		"Cena": {
+			"Marcar": "Cena de batalha em massa",
+			"MarcarDica": "Abre o painel de batalha em massa para toda a mesa nesta cena. Desmarcar não apaga a configuração da batalha.",
+			"Configurar": "Configurar batalha",
+			"SalveAntes": "Salve a cena com a opção marcada para configurar a batalha.",
+			"ConfiguradorEmBreve": "O configurador da batalha ainda não foi implementado (T4)."
+		},
+		"Config": {
+			"abrirAutomaticamente": {
+				"Nome": "Abrir a batalha automaticamente",
+				"Dica": "Abre o painel da batalha para toda a mesa quando uma cena de batalha é ativada."
+			}
+		}
+	}
+}

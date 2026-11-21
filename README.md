@@ -1,0 +1,27 @@
+# T20 — Batalha em Massa
+
+Módulo do Foundry VTT (v14) para o sistema Tormenta20 (≥ 1.6.7): batalhas em massa da *Guerra Artoniana* (Apêndice B) numa cena marcada como cena de batalha.
+
+Uso pessoal: Tormenta20 e os textos dos livros são da Jambô Editora. Não compartilhe.
+
+Spec e plano de tasks: `SDD/t20-batalha-em-massa/feature/spec.md`.
+
+## Estado
+
+- [x] T1 — Esqueleto do módulo
+- [x] T2 — Marcar cena como batalha (falta testar no Foundry)
+- [ ] T3 — Modelo de dados e regras puras
+- [ ] T4 — Configurador do mestre
+- [ ] T5 — Tabela de inimigos
+- [ ] T6 — Regras opcionais
+- [ ] T7 — Modal da batalha
+- [ ] T8 — Condução das etapas
+- [ ] T9 — Posicionamento
+- [ ] T10 — Evento
+- [ ] T11 — Teste dos generais
+- [ ] T12 — Fim da batalha
+- [ ] T13 — Robustez e entrega
+
+## Instalação
+
+Copie (ou crie um link simbólico de) esta pasta em `Data/modules/t20-batalha-em-massa` e ative o módulo num mundo Tormenta20.

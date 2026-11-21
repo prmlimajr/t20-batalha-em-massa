@@ -1,0 +1,59 @@
+/* T20 — Batalha em Massa
+   Paleta e medidas tiradas de SDD/t20-batalha-em-massa/fontes/layout.png.
+   Tudo fica sob .t20-batalha para não vazar para o resto do Foundry. */
+
+.t20-batalha {
+	/* Superfícies */
+	--bm-fundo: #15160f;
+	--bm-fundo-img: url("../assets/fundo.png");
+	--bm-campo-img: url("../assets/campodebatalha.png");
+	--bm-painel: rgba(22, 24, 18, 0.82);
+	--bm-aliado: #14232b;
+	--bm-aliado-borda: #3f6e86;
+	--bm-inimigo: #2a1a18;
+	--bm-inimigo-borda: #7a3b33;
+
+	/* Texto e destaque */
+	--bm-texto: #ece4d2;
+	--bm-texto-suave: rgba(236, 228, 210, 0.62);
+	--bm-ouro: #c9a86a;
+	--bm-ouro-claro: rgba(201, 168, 106, 0.18);
+	--bm-aliado-rotulo: #7fb2c9;
+	--bm-inimigo-rotulo: #d98a7c;
+	--bm-linha: rgba(236, 228, 210, 0.16);
+
+	/* Tipografia */
+	--bm-fonte-titulo: "Cormorant Garamond", "Cormorant", Georgia, serif;
+	--bm-fonte-texto: "Inter", "Signika", system-ui, sans-serif;
+
+	/* Retratos (hierarquia do layout) */
+	--bm-retrato-general: 110px;
+	--bm-retrato-estandarte: 70px;
+	--bm-retrato-personalidade: 60px;
+	--bm-retrato-heroi: 48px;
+	--bm-retrato-substituto: 36px;
+
+	--bm-raio: 10px;
+
+	color: var(--bm-texto);
+	font-family: var(--bm-fonte-texto);
+}
+
+/* ---------------- Configuração da cena (T2) ---------------- */
+
+.t20bm-config-cena {
+	border: 1px solid var(--color-border, #7a7971);
+	border-radius: 6px;
+	margin: 0.5rem 0;
+}
+.t20bm-config-cena legend {
+	font-weight: bold;
+	padding: 0 0.25rem;
+}
+.t20bm-config-cena .t20bm-configurar {
+	width: 100%;
+}
+.t20bm-icone-batalha {
+	margin-right: 0.35em;
+	opacity: 0.8;
+}
