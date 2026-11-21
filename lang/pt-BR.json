@@ -92,7 +92,8 @@
 				"SemHerois": "Nenhum herói na batalha.",
 				"SemInimigos": "A tabela de inimigos está vazia: cadastre os inimigos na aba Inimigos.",
 				"SemGuerraAliado": "O general do seu exército está sem bônus de Guerra (a rolagem usará +0).",
-				"SemGuerraInimigo": "O general inimigo está sem bônus de Guerra (a rolagem usará +0)."
+				"SemGuerraInimigo": "O general inimigo está sem bônus de Guerra (a rolagem usará +0).",
+				"SemImagemCeu": "O combate aéreo está ativo, mas sem imagem do mapa aéreo."
 			}
 		},
 		"Inimigos": {
@@ -152,6 +153,10 @@
 				"posicionamentoLobos": {
 					"Titulo": "Cada herói escolhe sua posição.",
 					"Texto": "Avance, recue ou permaneça: até uma área de onde o turno começou. Quando todos concluírem, a batalha segue."
+				},
+				"eventoCeu": {
+					"Titulo": "Os céus aguardam sua ordem.",
+					"Texto": "Resolva o confronto e atualize o rumo da batalha."
 				}
 			},
 			"Iniciar": "Iniciar batalha",
@@ -193,8 +198,12 @@
 				"ForaDaEtapa": "Só é possível mover na etapa de Posicionamento.",
 				"UmaArea": "Só é possível ficar até uma área à frente ou atrás de onde o turno começou.",
 				"Encerrada": "A batalha já terminou.",
-				"Morto": "Esse herói está morto."
-			}
+				"Morto": "Esse herói está morto.",
+				"NaoVoa": "Só quem voa pode ir para “Sob os céus”.",
+				"GrupoNaoVoa": "O grupo só sobe aos céus se todos os heróis voarem."
+			},
+			"Subir": "Subir aos céus",
+			"Descer": "Descer: {area}"
 		},
 		"Preparacao": {
 			"Prontos": "Prontos: {quantos} de {total}",
@@ -208,7 +217,7 @@
 			"Teste": "Teste de {pericias} (CD {cd}): +2 no teste de Guerra se passar.",
 			"DanoPorBonus": "+1 no teste de Guerra a cada {dano} de dano.",
 			"Resolucao": "Resolução do evento",
-			"BonusTotal": "Bônus de Guerra do evento:",
+			"BonusTotal": "Bônus de Guerra nesta rodada:",
 			"BonusDaArea": "Bônus de Guerra desta área",
 			"Dano": "Dano",
 			"DanoLider": "Dano no líder (×2)",
@@ -223,7 +232,8 @@
 			"Oficial": "Um oficial",
 			"GanhaPontos": "{exercito} ganha {pontos} pontos de vitória.",
 			"NovoGeneral": "{nome} assume o exército inimigo com Guerra {guerra} (−{penalidade}).",
-			"AbrirFichaInimigo": "Abrir a ficha do inimigo (para as rolagens de ataque)"
+			"AbrirFichaInimigo": "Abrir a ficha do inimigo (para as rolagens de ataque)",
+			"InclusiveEstandartes": "(inclui +{valor} de estandartes)"
 		},
 		"Generais": {
 			"Cartao": "Teste dos Generais",
@@ -256,7 +266,10 @@
 			"RemoverTexto": "{atual} sai de cena. {novo} assume o comando e rola nos próximos Testes dos Generais.",
 			"GuerraNovo": "Bônus de Guerra de {novo}",
 			"GuerraNovoDica": "Guerra na ficha do substituto: {ficha}. Sem ficha, o campo vem com o bônus do general anterior.",
-			"RemoverSemSubstituto": "{atual} sai de cena e não há substituto disponível. Um oficial assume o comando com a Guerra do general anterior −1d6−1 ({min} a {max}), rolada agora."
+			"RemoverSemSubstituto": "{atual} sai de cena e não há substituto disponível. Um oficial assume o comando com a Guerra do general anterior −1d6−1 ({min} a {max}), rolada agora.",
+			"FimDaRodada": "Fim da rodada",
+			"EncerrarTurno": "Encerrar turno e avançar",
+			"AguardandoMestre": "Aguardando o mestre encerrar o turno."
 		},
 		"Fim": {
 			"Resultado": "Fim da batalha",
@@ -297,7 +310,21 @@
 			"MarcarMorto": "Marcar como morto",
 			"Reviver": "Desmarcar morto",
 			"Remover": "Remover da batalha",
-			"Morto": "Morto"
+			"Morto": "Morto",
+			"Voa": "Pode voar",
+			"NaoVoa": "Não voa"
+		},
+		"Ceu": {
+			"Ativar": "Combate aéreo (área “Sob os céus”)",
+			"Dica": "Posição adicional para batalhas com aeronaves e combatentes alados, uma seção só, acima das quatro áreas terrestres. Alcançável a partir de qualquer posição exceto o Acampamento, e só por quem voa (marque na aba Heróis).",
+			"Subtitulo": "Sob os céus",
+			"Mod": "Modificador do evento",
+			"ModDica": "Regra do combate aéreo: +5 na rolagem de evento. Os testes de perícia desses eventos têm CD +5, e o bônus em Guerra por resolver um evento aqui aumenta em +2.",
+			"Imagem": "Imagem do mapa aéreo",
+			"ImagemDica": "Ideal: as mesmas medidas da imagem do campo terrestre",
+			"Voa": "Voa",
+			"VoaDica": "Pode ir para “Sob os céus”. Vem marcado se a ficha tem deslocamento de voo.",
+			"NotaEvento": "Sob os céus: CD dos testes +{cd}; resolver o evento rende +{bonus} a mais no bônus de Guerra."
 		}
 	}
 }

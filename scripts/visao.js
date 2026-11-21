@@ -5,11 +5,12 @@
  * `resolver(retrato)` devolve o retrato com nome/imagem atuais do ator (no Foundry: retratos.js);
  * nos testes, a identidade.
  */
-import { TAMANHOS, POSICOES, ETAPAS, ETAPA_PRE } from "./constantes.js";
+import { TAMANHOS, ETAPAS, ETAPA_PRE } from "./constantes.js";
+import { areasDisponiveis, nomeDaArea, subtituloDaArea, modDaArea, AREA_CEU } from "./areas.js";
 import { completarEstado } from "./estado.js";
 import { limiarVitoria } from "./regras.js";
-import { camposDoEvento, bonusDaRodada, eventoPorChave } from "./evento.js";
-import { MECANICAS } from "./constantes.js";
+import { camposDoEvento, bonusDaRodada, eventoPorChave, bonusEstandartes } from "./evento.js";
+import { MECANICAS, BONUS_ESTANDARTE } from "./constantes.js";
 
 const ROMANOS = ["I", "II", "III", "IV"];
 const comSinal = (n) => (n > 0 ? `+${n}` : n < 0 ? `−${Math.abs(n)}` : "+0");
@@ -72,21 +73,32 @@ export function visaoBatalha(salvo, { resolver = (r) => r } = {}) {
 	const areasOcupadas = new Set(herois.map((h) => h.area));
 	if (!herois.length) areasOcupadas.add(e.grupoArea);
 
-	const areas = e.areas.map((a, i) => ({
+	// Áreas terrestres (0–3) e, se ativo, o combate aéreo (4): o índice no array é o índice da área.
+	const areas = areasDisponiveis(e).map((i) => ({
 		indice: i,
+		ceu: i === AREA_CEU,
 		evento: e.rodada.eventos?.[i] ?? null,
 		inimigo: e.rodada.inimigos?.[i] ? resolver(e.rodada.inimigos[i]) : null,
-		romano: ROMANOS[i],
-		nome: a.nome,
-		subtitulo: POSICOES[i].nome,
-		mod: POSICOES[i].mod,
+		romano: ROMANOS[i] ?? "",
+		nome: nomeDaArea(e, i),
+		subtitulo: subtituloDaArea(i),
+		mod: modDaArea(e, i),
 		destaque: areasOcupadas.has(i),
 		herois: herois.filter((h) => h.area === i)
 	}));
 	for (const a of areas) a.ocupada = a.herois.length > 0;
 
 	// Resolução dos eventos: uma linha por área com evento sorteado.
+	// Nos eventos de estandarte, a linha (e a área) somam +2 por herói da área que segura um estandarte;
+	// o total da rodada soma os estandartes de todos os heróis (o mesmo que entra no Teste dos Generais).
 	const bonus = bonusDaRodada(e);
+	const estandartesNaArea = (a) => a.herois.filter((h) => h.estandarte && !h.morto).length * BONUS_ESTANDARTE;
+	for (const a of areas) {
+		if (a.evento && eventoPorChave(a.evento.chave)?.estandarte) {
+			bonus.porArea[a.indice] = (bonus.porArea[a.indice] ?? 0) + estandartesNaArea(a);
+		}
+	}
+	const totalEstandartes = bonusEstandartes(e);
 	const resolucoes = areas.filter((a) => a.evento).map((a) => {
 		const def = eventoPorChave(a.evento.chave);
 		return {
@@ -119,13 +131,17 @@ export function visaoBatalha(salvo, { resolver = (r) => r } = {}) {
 		etapa: e.etapa,
 		areas,
 		// Rodapé: chave da mensagem da etapa + área citada ("O Front aguarda sua ordem.")
-		mensagem: { etapa: pre ? ETAPA_PRE : e.etapa, area: areaGrupo.subtitulo },
+		mensagem: { etapa: pre ? ETAPA_PRE : e.etapa, area: areaGrupo.subtitulo, ceu: !!areaGrupo.ceu },
 		imagens: e.imagens,
+		areasTerrestres: areas.filter((a) => !a.ceu),
+		ceu: areas.find((a) => a.ceu) ?? null,
+		imagemCeu: e.ceu.ativo ? e.ceu.imagem : "",
 		lobosSolitarios: e.opcionais.lobosSolitarios,
 		preBatalha: e.opcionais.preBatalha,
 		acoesAbertas: e.opcionais.acoesAbertas,
 		posicionamentoAvancado: e.opcionais.posicionamentoAvancado,
 		resolucoes,
-		bonusEvento: bonus.total
+		bonusEvento: bonus.total + totalEstandartes,
+		bonusEstandartes: totalEstandartes
 	};
 }

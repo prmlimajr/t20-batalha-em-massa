@@ -976,6 +976,23 @@ button.t20bm-icone {
 	background-position: center;
 	overflow: hidden;
 }
+/* Combate aéreo: uma seção só, logo acima das quatro áreas, largura total e a mesma altura. */
+.t20bm-areas.t20bm-ceu {
+	grid-template-columns: 1fr;
+	margin-bottom: -14px; /* encosta nas áreas terrestres (o gap da seção é 14px) */
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	background-color: #1f2a33;
+}
+.t20bm-ceu + .t20bm-areas {
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	border-top: 2px solid rgba(236, 228, 210, 0.22);
+}
+.t20bm-area-campo.area-ceu { border-left: none; }
+.t20bm-area-ceu-config legend label { display: inline-flex; align-items: center; gap: 6px; font-weight: bold; }
+.t20bm-medidas { font-weight: bold; }
+
 .t20bm-area-campo {
 	position: relative;
 	display: flex;
@@ -1084,6 +1101,10 @@ button.t20bm-icone {
 	border-color: rgba(236, 228, 210, 0.35);
 	background: rgba(30, 34, 26, 0.95);
 }
+/* Rodapé da condução: todos os botões com a altura do "Avançar etapa". */
+.t20bm-conducao button { height: 44px; }
+.t20bm-tabuleiro .t20bm-conducao button.t20bm-icone { width: 44px; }
+
 .t20bm-tabuleiro button:disabled {
 	opacity: 0.5;
 	cursor: wait;
@@ -1321,6 +1342,17 @@ button.t20bm-icone {
 }
 .t20bm-area-evento b { color: var(--bm-ouro); font-weight: 600; }
 .t20bm-heroi { position: relative; display: inline-flex; }
+.t20bm-asa {
+	position: absolute;
+	bottom: -4px;
+	right: -4px;
+	z-index: 1;
+	font-size: 12px;
+	color: #cfe3f0;
+	filter: drop-shadow(0 1px 2px #000);
+	pointer-events: none;
+}
+.t20bm-voa { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; white-space: nowrap; }
 .t20bm-bandeira {
 	position: absolute;
 	top: -6px;
@@ -1499,6 +1531,54 @@ button.t20bm-icone {
 	.t20bm-areas { grid-template-columns: 1fr; }
 	.t20bm-area-campo { border-left: none; border-top: 1px solid rgba(236, 228, 210, 0.22); }
 	.t20bm-token.general { width: 80px; height: 80px; }
+}
+
+/* ---------- Vencedor da rodada (painel persistente até o mestre encerrar o turno) ---------- */
+
+.t20bm-resultado {
+	position: absolute;
+	inset: 0;
+	z-index: 5;
+	display: grid;
+	place-items: center;
+	overflow: hidden;
+	border-radius: 14px;
+}
+.t20bm-resultado > * { grid-area: 1 / 1; }
+.t20bm-resultado .t20bm-ab-titulo { animation: none; }
+.t20bm-resultado.aliado { background: radial-gradient(circle at 50% 50%, rgba(43, 80, 100, 0.96), rgba(8, 14, 18, 0.98) 70%); }
+.t20bm-resultado.inimigo { background: radial-gradient(circle at 50% 50%, rgba(92, 40, 34, 0.96), rgba(18, 8, 6, 0.98) 70%); }
+/* A faixa dourada envolve todo o texto e cresce com ele. */
+.t20bm-resultado-textos {
+	position: relative;
+	width: 100%;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	padding: 28px 48px;
+	text-align: center;
+	background: linear-gradient(to bottom, rgba(20, 16, 8, 0.55), rgba(20, 16, 8, 0.85) 20%, rgba(20, 16, 8, 0.85) 80%, rgba(20, 16, 8, 0.55));
+	border-top: 2px solid var(--bm-ouro);
+	border-bottom: 2px solid var(--bm-ouro);
+	box-shadow: 0 0 24px rgba(201, 168, 106, 0.4);
+}
+.t20bm-resultado .t20bm-ab-titulo { font-size: clamp(28px, 4.2vw, 52px); line-height: 1.1; }
+.t20bm-resultado-textos .t20bm-sobretitulo { color: #f1d48c; }
+.t20bm-resultado-textos p { margin: 0; color: var(--bm-texto); font-size: 15px; }
+.t20bm-resultado-placar { font-size: 15px; color: var(--bm-texto-suave); }
+.t20bm-resultado-acoes { display: flex; gap: 10px; margin-top: 14px; }
+.t20bm-resultado .t20bm-aguardando { margin-top: 14px; }
+/* Entrada (uma vez por resultado): fundo, faixa e texto; depois fica parado. */
+.t20bm-resultado.animar { animation: t20bm-res-fundo 400ms ease-out both; }
+.t20bm-resultado.animar .t20bm-resultado-textos { animation: t20bm-res-faixa 600ms 150ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.t20bm-resultado.animar .t20bm-resultado-textos > * { animation: t20bm-res-texto 700ms 450ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both; }
+@keyframes t20bm-res-fundo { from { opacity: 0; } to { opacity: 1; } }
+@keyframes t20bm-res-faixa { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+@keyframes t20bm-res-texto { 0% { opacity: 0; transform: scale(1.6); } 60% { opacity: 1; transform: scale(0.96); } 100% { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+	.t20bm-resultado.animar, .t20bm-resultado.animar .t20bm-resultado-textos, .t20bm-resultado.animar .t20bm-resultado-textos > * { animation: none; }
 }
 
 /* ---------- Animação de abertura ("A batalha começa") ---------- */

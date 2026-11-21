@@ -1,5 +1,57 @@
+{{#*inline "areaCampo"}}
+				<div class="t20bm-area-campo {{#if destaque}}destaque{{/if}} {{#if ceu}}area-ceu{{/if}}" data-area="{{indice}}">
+					{{#if @root.sorteiosDoMestre}}{{#if ocupada}}
+					<div class="t20bm-area-acoes">
+						<button type="button" class="t20bm-mini" data-action="sortearInimigo" data-area="{{indice}}" data-tooltip="T20BM.Evento.SortearInimigo" {{#if @root.ocupado}}disabled{{/if}}><i class="fa-solid fa-skull"></i></button>
+						{{#if @root.posicionamentoAvancado}}
+						<select class="t20bm-ajuste" data-resolucao="ajuste" data-area="{{indice}}" data-tooltip="T20BM.Evento.Ajuste">
+							<option value="-2" {{#if (eq ajuste -2)}}selected{{/if}}>−2</option>
+							<option value="0" {{#if (eq ajuste 0)}}selected{{/if}}>±0</option>
+							<option value="2" {{#if (eq ajuste 2)}}selected{{/if}}>+2</option>
+						</select>
+						{{/if}}
+						<button type="button" class="t20bm-mini" data-action="sortearEvento" data-area="{{indice}}" data-tooltip="T20BM.Evento.SortearEvento" {{#if @root.ocupado}}disabled{{/if}}><i class="fa-solid fa-dice-d20"></i></button>
+					</div>
+					{{/if}}{{/if}}
+					<span class="t20bm-romano">{{romano}}</span>
+					<h3>{{nome}}</h3>
+					<span class="t20bm-sobretitulo">{{subtitulo}}</span>
+					{{#if evento}}<span class="t20bm-area-evento" data-tooltip="{{evento.total}}"><i class="fa-solid fa-dice-d20"></i> {{evento.nome}} <b>{{bonusTxt}}</b></span>{{/if}}
+					{{#if inimigo}}<span class="t20bm-area-inimigo {{#if inimigo.podeVer}}clicavel{{/if}}" {{#if inimigo.podeVer}}data-action="abrirFicha" data-uuid="{{inimigo.uuid}}" data-tooltip="T20BM.Evento.AbrirFichaInimigo"{{/if}}>{{#if inimigo.img}}<img src="{{inimigo.img}}" alt="">{{/if}} {{inimigo.nome}}</span>{{/if}}
+					<div class="t20bm-herois">
+						{{#each herois}}
+						<span class="t20bm-heroi {{#if morto}}morto{{/if}}">
+						{{#if morto}}<i class="fa-solid fa-skull t20bm-caveira" data-tooltip="T20BM.Herois.Morto"></i>{{/if}}
+						{{#if estandarte}}<i class="fa-solid fa-flag t20bm-bandeira" data-tooltip="T20BM.Evento.SeguraEstandarte"></i>{{/if}}
+						{{#if voa}}{{#if @root.ceu}}<i class="fa-solid fa-feather t20bm-asa" data-tooltip="T20BM.Ceu.Voa"></i>{{/if}}{{/if}}
+						<img class="t20bm-token heroi {{#if podeVer}}clicavel{{/if}} {{#if arrastavel}}arrastavel{{/if}}" src="{{img}}" alt="{{nome}}" data-tooltip="{{nome}}" data-heroi="{{uuid}}" {{#if arrastavel}}draggable="true" data-destinos="{{destinos}}"{{/if}} {{#if podeVer}}data-action="abrirFicha" data-uuid="{{uuid}}"{{/if}}>
+						</span>
+						{{/each}}
+					</div>
+				</div>
+{{/inline}}
 <div class="t20bm-tabuleiro" style="{{estiloFundo}}">
 	<div class="t20bm-aviso-modal" role="status" aria-live="polite"></div>
+	{{#if resultadoRodada}}
+	{{!-- Vencedor da rodada: fica até o mestre encerrar o turno --}}
+	<div class="t20bm-resultado {{resultadoRodada.lado}} {{#if resultadoRodada.animar}}animar{{/if}}" role="status" aria-live="polite">
+		<div class="t20bm-resultado-textos">
+			<span class="t20bm-sobretitulo">{{localize "T20BM.Generais.FimDaRodada"}} · {{resultadoRodada.totais}}</span>
+			<div class="t20bm-ab-titulo">{{resultadoRodada.titulo}}</div>
+			<div class="t20bm-ab-subtitulo">{{resultadoRodada.subtitulo}}</div>
+			<span class="t20bm-resultado-placar">{{localize "T20BM.Fim.Placar"}} {{resultadoRodada.placar}}</span>
+			{{#each resultadoRodada.notas}}<p>{{this}}</p>{{/each}}
+			{{#if resultadoRodada.gm}}
+			<div class="t20bm-resultado-acoes">
+				<button type="button" data-action="resetarGenerais"><i class="fa-solid fa-dice"></i> {{localize "T20BM.Generais.Resetar"}}</button>
+				<button type="button" class="t20bm-principal" data-action="avancar" {{#if ocupado}}disabled{{/if}}>{{localize "T20BM.Generais.EncerrarTurno"}} <i class="fa-solid fa-arrow-right"></i></button>
+			</div>
+			{{else}}
+			<span class="t20bm-aguardando"><i class="fa-solid fa-hourglass-half"></i> {{localize "T20BM.Generais.AguardandoMestre"}}</span>
+			{{/if}}
+		</div>
+	</div>
+	{{/if}}
 	<div class="t20bm-tabuleiro-conteudo">
 
 		{{!-- ============ Cabeçalho ============ --}}
@@ -188,37 +240,14 @@
 		{{!-- ============ Campo de batalha ============ --}}
 		<section class="t20bm-campo">
 			<h2>{{localize "T20BM.Modal.CampoDeBatalha"}}</h2>
+			{{#if ceu}}
+			<div class="t20bm-areas t20bm-ceu" {{#if imagemCeu}}style="background-image: url('{{imagemCeu}}')"{{/if}}>
+				{{#with ceu}}{{> areaCampo}}{{/with}}
+			</div>
+			{{/if}}
 			<div class="t20bm-areas" style="{{estiloCampo}}">
-				{{#each areas}}
-				<div class="t20bm-area-campo {{#if destaque}}destaque{{/if}}" data-area="{{indice}}">
-					{{#if @root.sorteiosDoMestre}}{{#if ocupada}}
-					<div class="t20bm-area-acoes">
-						<button type="button" class="t20bm-mini" data-action="sortearInimigo" data-area="{{indice}}" data-tooltip="T20BM.Evento.SortearInimigo" {{#if @root.ocupado}}disabled{{/if}}><i class="fa-solid fa-skull"></i></button>
-						{{#if @root.posicionamentoAvancado}}
-						<select class="t20bm-ajuste" data-resolucao="ajuste" data-area="{{indice}}" data-tooltip="T20BM.Evento.Ajuste">
-							<option value="-2" {{#if (eq ajuste -2)}}selected{{/if}}>−2</option>
-							<option value="0" {{#if (eq ajuste 0)}}selected{{/if}}>±0</option>
-							<option value="2" {{#if (eq ajuste 2)}}selected{{/if}}>+2</option>
-						</select>
-						{{/if}}
-						<button type="button" class="t20bm-mini" data-action="sortearEvento" data-area="{{indice}}" data-tooltip="T20BM.Evento.SortearEvento" {{#if @root.ocupado}}disabled{{/if}}><i class="fa-solid fa-dice-d20"></i></button>
-					</div>
-					{{/if}}{{/if}}
-					<span class="t20bm-romano">{{romano}}</span>
-					<h3>{{nome}}</h3>
-					<span class="t20bm-sobretitulo">{{subtitulo}}</span>
-					{{#if evento}}<span class="t20bm-area-evento" data-tooltip="{{evento.total}}"><i class="fa-solid fa-dice-d20"></i> {{evento.nome}} <b>{{bonusTxt}}</b></span>{{/if}}
-					{{#if inimigo}}<span class="t20bm-area-inimigo {{#if inimigo.podeVer}}clicavel{{/if}}" {{#if inimigo.podeVer}}data-action="abrirFicha" data-uuid="{{inimigo.uuid}}" data-tooltip="T20BM.Evento.AbrirFichaInimigo"{{/if}}>{{#if inimigo.img}}<img src="{{inimigo.img}}" alt="">{{/if}} {{inimigo.nome}}</span>{{/if}}
-					<div class="t20bm-herois">
-						{{#each herois}}
-						<span class="t20bm-heroi {{#if morto}}morto{{/if}}">
-						{{#if morto}}<i class="fa-solid fa-skull t20bm-caveira" data-tooltip="T20BM.Herois.Morto"></i>{{/if}}
-						{{#if estandarte}}<i class="fa-solid fa-flag t20bm-bandeira" data-tooltip="T20BM.Evento.SeguraEstandarte"></i>{{/if}}
-						<img class="t20bm-token heroi {{#if podeVer}}clicavel{{/if}} {{#if arrastavel}}arrastavel{{/if}}" src="{{img}}" alt="{{nome}}" data-tooltip="{{nome}}" data-heroi="{{uuid}}" {{#if arrastavel}}draggable="true" data-destinos="{{destinos}}"{{/if}} {{#if podeVer}}data-action="abrirFicha" data-uuid="{{uuid}}"{{/if}}>
-						</span>
-						{{/each}}
-					</div>
-				</div>
+				{{#each areasTerrestres}}
+				{{> areaCampo}}
 				{{/each}}
 			</div>
 		</section>
@@ -228,7 +257,7 @@
 		<section class="t20bm-resolucao">
 			<header>
 				<h2>{{localize "T20BM.Evento.Resolucao"}}</h2>
-				<span class="t20bm-resolucao-total">{{localize "T20BM.Evento.BonusTotal"}} <b>{{bonusEventoTxt}}</b></span>
+				<span class="t20bm-resolucao-total">{{localize "T20BM.Evento.BonusTotal"}} <b>{{bonusEventoTxt}}</b>{{#if bonusEstandartes}} <small>{{localize "T20BM.Evento.InclusiveEstandartes" valor=bonusEstandartes}}</small>{{/if}}</span>
 			</header>
 			{{#each resolucoes}}
 			<div class="t20bm-resolucao-linha">
@@ -294,8 +323,7 @@
 					{{#each movimento.opcoes}}
 					<div class="t20bm-movimento-linha">
 						<span class="t20bm-sobretitulo">{{rotulo}}</span>
-						{{#if recuar}}<button type="button" data-action="mover" data-heroi="{{uuid}}" data-para="{{paraRecuar}}"><i class="fa-solid fa-arrow-left"></i> {{localize "T20BM.Posicionamento.Recuar"}}</button>{{/if}}
-						{{#if avancar}}<button type="button" data-action="mover" data-heroi="{{uuid}}" data-para="{{paraAvancar}}">{{localize "T20BM.Posicionamento.Avancar"}} <i class="fa-solid fa-arrow-right"></i></button>{{/if}}
+						{{#each botoes}}<button type="button" data-action="mover" data-heroi="{{../uuid}}" data-para="{{para}}" data-tooltip="{{dica}}">{{#if antes}}<i class="fa-solid {{icone}}"></i> {{/if}}{{rotulo}}{{#unless antes}} <i class="fa-solid {{icone}}"></i>{{/unless}}</button>{{/each}}
 					</div>
 					{{/each}}
 					<span class="t20bm-movimento-dica">{{localize "T20BM.Posicionamento.Dica"}}</span>

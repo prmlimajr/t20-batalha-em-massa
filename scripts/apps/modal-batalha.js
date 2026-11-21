@@ -23,7 +23,7 @@ import {
 import { composicaoBonus, podeRolar, registrarRolagem, sortearJogador, definirQuemRola, resetarGenerais } from "../generais.js";
 import { atualizarResolucao, alternarEstandarte, derrotarGeneralInimigo, definirAjuste, substituirGeneral, temSubstituto } from "../evento.js";
 import { animarAbertura } from "../abertura.js";
-import { validarMovimento, moverHeroi, opcoesDeMovimento, removerHeroi, alternarMorto } from "../posicionamento.js";
+import { validarMovimento, moverHeroi, opcoesDeMovimento, removerHeroi, alternarMorto, alternarVoo } from "../posicionamento.js";
 import { pedirAoMestre, registrarTratador } from "../socket.js";
 import { visaoBatalha } from "../visao.js";
 import { retratoVivo } from "../retratos.js";
@@ -32,7 +32,7 @@ import { ConfiguradorBatalha } from "./configurador.js";
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 
 const INTERVALO_CARROSSEL = 5000;
-const DURACAO_RESULTADO = 5000; // animação do vencedor da rodada
+
 
 export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 	static #atual = null;
@@ -134,8 +134,7 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 			opcoes: opcoes.map((o) => ({
 				...o,
 				rotulo: v.lobosSolitarios ? o.nome : L("Posicionamento.Grupo"),
-				paraRecuar: o.de - 1,
-				paraAvancar: o.de + 1
+				botoes: botoesDeMovimento(o, v.areas)
 			})),
 
 			lobos: v.lobosSolitarios
@@ -144,7 +143,8 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 		const transicao = this.#emTransicao(v.etapa);
 		const fim = salvo.fim ? formatarFim(resumoFim(salvo, { nds: await ndsDaTabela(salvo) })) : null;
 		const dadosMensagem = { area: v.mensagem.area };
-		const chaveMensagem = v.mensagem.etapa === "posicionamento" && v.lobosSolitarios ? "posicionamentoLobos" : v.mensagem.etapa;
+		const chaveMensagem = v.mensagem.etapa === "posicionamento" && v.lobosSolitarios ? "posicionamentoLobos"
+			: v.mensagem.etapa === "evento" && v.mensagem.ceu ? "eventoCeu" : v.mensagem.etapa;
 		const exibida = idExibida() === this.idBatalha;
 		return {
 			...v,
@@ -155,6 +155,7 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 			mensagemTitulo: generais?.mensagemTitulo ?? L(`Modal.Mensagens.${chaveMensagem}.Titulo`, dadosMensagem),
 			mensagemTexto: generais?.mensagemTexto ?? L(`Modal.Mensagens.${chaveMensagem}.Texto`, dadosMensagem),
 			faseGenerais: !!generais,
+			resultadoRodada: this.#resultadoRodada(salvo, gm),
 			transicaoGenerais: transicao,
 			mostrarSecoesTurno: !generais || transicao,
 			podeResetarGenerais: gm && !!generais && !salvo.fim && Object.keys(salvo.rodada.generais ?? {}).length + (salvo.rodada.resultadoGenerais ? 1 : 0) > 0,
@@ -356,6 +357,32 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 		return etapa === "generais" && Date.now() < (this.transicaoAte ?? 0);
 	}
 
+	/**
+	 * Painel do vencedor da rodada: fica sobre o tabuleiro até o mestre encerrar o turno.
+	 * A animação de entrada toca uma vez por resultado (não a cada atualização).
+	 */
+	#resultadoRodada(estado, gm) {
+		const r = estado.rodada?.resultadoGenerais;
+		if (estado.etapa !== "generais" || !r || r.empate || estado.fim) return null;
+		const chave = `${estado.turno}:${r.vencedor}:${r.pontos}:${r.totais?.join("x")}`;
+		const animar = this.resultadoVisto !== chave;
+		this.resultadoVisto = chave;
+		const notas = [];
+		if (r.desempateBonus) notas.push(L("Generais.DesempateBonus"));
+		if (r.fugindo !== null && r.fugindo !== undefined) notas.push(L("Generais.Fuga", { exercito: estado.exercitos[r.fugindo].nome }));
+		else if (r.fugaInterrompida) notas.push(L("Generais.FugaInterrompida"));
+		return {
+			lado: r.vencedor === 0 ? "aliado" : "inimigo",
+			animar,
+			titulo: L("Generais.VenceRodada", { exercito: estado.exercitos[r.vencedor].nome }),
+			subtitulo: L(r.pontos === 1 ? "Generais.MarcaPonto" : "Generais.MarcaPontos", { pontos: r.pontos }),
+			totais: r.totais?.length ? `${r.totais[0]} × ${r.totais[1]}` : "",
+			placar: `${estado.exercitos[0].pontos} × ${estado.exercitos[1].pontos}`,
+			notas,
+			gm
+		};
+	}
+
 	static async #resetarGenerais() {
 		if (!game.user.isGM) return;
 		const ok = await DialogV2.confirm({
@@ -396,6 +423,7 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 			content: `<p>${L("Herois.MenuTexto", { nome })}</p>`,
 			buttons: [
 				{ action: "morto", label: L(heroi.morto ? "Herois.Reviver" : "Herois.MarcarMorto"), icon: heroi.morto ? "fa-solid fa-heart-pulse" : "fa-solid fa-skull" },
+				...(estado.ceu?.ativo ? [{ action: "voo", label: L(heroi.voa ? "Herois.NaoVoa" : "Herois.Voa"), icon: "fa-solid fa-feather" }] : []),
 				{ action: "remover", label: L("Herois.Remover"), icon: "fa-solid fa-user-minus" },
 				{ action: "cancelar", label: L("Fim.Cancelar"), default: true }
 			],
@@ -404,6 +432,7 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 		const atual = lerBatalha(this.idBatalha);
 		if (escolha === "morto") await gravarBatalha(this.idBatalha, alternarMorto(atual, uuid));
 		if (escolha === "remover") await gravarBatalha(this.idBatalha, removerHeroi(atual, uuid));
+		if (escolha === "voo") await gravarBatalha(this.idBatalha, alternarVoo(atual, uuid));
 	}
 
 	/* ---------------- General: remover da cena (mestre) ---------------- */
@@ -502,13 +531,7 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 				texto: L("Generais.Empate"), subtitulo: L("Generais.RolemDeNovo")
 			}));
 		}
-		const ex = estado.exercitos[r.vencedor];
-		requestAnimationFrame(() => animarAbertura({
-			container: this.element, alvo, imagem: null, classe: r.vencedor === 0 ? "aliado" : "inimigo",
-			duracao: DURACAO_RESULTADO,
-			texto: L("Generais.VenceRodada", { exercito: ex.nome }),
-			subtitulo: L(r.pontos === 1 ? "Generais.MarcaPonto" : "Generais.MarcaPontos", { pontos: r.pontos })
-		}));
+		// O vencedor da rodada é o painel persistente do tabuleiro (resultadoRodada no template).
 	}
 
 	static #moverPorBotao(_ev, alvo) {
@@ -646,6 +669,23 @@ function larguraDaBarraLateral() {
 		}
 	}
 	return Math.max(0, Math.ceil(window.innerWidth - esquerda));
+}
+
+/* ---------------- Posicionamento: botões com o destino ---------------- */
+
+/** Um botão por destino possível: ← recuar, avançar →, ↑ subir aos céus, ↓ descer dos céus. */
+function botoesDeMovimento(opcao, areas) {
+	const nome = (i) => areas.find((a) => a.indice === i)?.nome ?? "";
+	return opcao.destinos
+		.filter((para) => para !== opcao.de)
+		.map((para) => {
+			const sobe = para === 4, desce = opcao.de === 4;
+			const icone = sobe ? "fa-arrow-up" : desce ? "fa-arrow-down" : para < opcao.de ? "fa-arrow-left" : "fa-arrow-right";
+			const antes = sobe || desce || para < opcao.de;
+			const rotulo = sobe ? L("Posicionamento.Subir") : desce ? L("Posicionamento.Descer", { area: nome(para) })
+				: para < opcao.de ? L("Posicionamento.Recuar") : L("Posicionamento.Avancar");
+			return { para, icone, antes, rotulo, dica: nome(para) };
+		});
 }
 
 /* ---------------- Preparação e Posicionamento: quem precisa marcar "concluí" ---------------- */

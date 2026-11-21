@@ -18,6 +18,12 @@ export function imagemDoAtor(ator) {
 	return ator?.img ?? null;
 }
 
+/** O ator voa? (deslocamento de voo na ficha do Tormenta20: system.attributes.movement.fly) */
+export function atorVoa(ator) {
+	const voo = ator?.system?.attributes?.movement?.fly;
+	return Number(voo?.value ?? voo?.base ?? voo ?? 0) > 0;
+}
+
 /** Retrato guardado na batalha: referência ao ator + nome e imagem do token de quando foi escolhido (fallback). */
 export function retratoDeAtor(ator) {
 	return { uuid: ator.uuid ?? null, nome: ator.name ?? ator.nome ?? "", img: imagemDoAtor(ator) };
@@ -74,7 +80,7 @@ export function adicionarHerois(herois, retratos, area = AREA_INICIAL) {
 
 /** Campos de configuração de cada exército (o resto é andamento). */
 const CAMPOS_EXERCITO = ["nome", "pontosIniciais", "general", "substituto", "personalidades", "estandartes", "modificadores"];
-const CAMPOS_BATALHA = ["nome", "local", "tamanho", "imagens", "areas", "tabelaInimigos", "opcionais"];
+const CAMPOS_BATALHA = ["nome", "local", "tamanho", "imagens", "areas", "tabelaInimigos", "opcionais", "ceu"];
 
 /**
  * Aplica o rascunho do configurador sobre a batalha salva mais recente.
@@ -110,6 +116,13 @@ export function aplicarConfiguracao(atual, rascunho, { pontosEditados = [false, 
 	const areaDe = new Map(base.herois.map((h) => [h.uuid, h.area]));
 	const areaNovos = base.iniciada ? base.grupoArea : AREA_INICIAL;
 	saida.herois = novo.herois.map((h) => ({ ...h, area: areaDe.get(h.uuid) ?? areaNovos }));
+
+	// Combate aéreo desligado: quem estava "Sob os céus" volta para a Retaguarda.
+	if (!saida.ceu?.ativo) {
+		if (saida.grupoArea === 4) saida.grupoArea = AREA_INICIAL;
+		saida.herois = saida.herois.map((h) => (h.area === 4 ? { ...h, area: AREA_INICIAL } : h));
+	}
+	saida.ceu.mod = Math.trunc(Number(saida.ceu?.mod) || 0);
 
 	saida.nome = String(saida.nome ?? "").trim();
 	saida.local = String(saida.local ?? "").trim();
@@ -150,5 +163,6 @@ export function pendencias(estado) {
 	});
 	if (!e.herois.length) avisos.push("SemHerois");
 	if (!e.tabelaInimigos.length) avisos.push("SemInimigos");
+	if (e.ceu?.ativo && !e.ceu.imagem) avisos.push("SemImagemCeu");
 	return avisos;
 }

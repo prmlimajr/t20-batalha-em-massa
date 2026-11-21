@@ -35,7 +35,7 @@ assert.deepEqual(herois.map((h) => [h.uuid, h.area]), [["Actor.h1", 1], ["Actor.
 const atual = estadoPadrao("Antiga");
 const rascunho = completarEstado(atual);
 rascunho.nome = "  Batalha de Svalas ";
-rascunho.local = "Oiteiro dos Coroados";
+rascunho.local = "Outeiro dos Coroados";
 rascunho.tamanho = "grande";
 rascunho.exercitos[0].nome = "Guarda do Norte";
 rascunho.exercitos[0].pontosIniciais = 0;
@@ -146,12 +146,16 @@ assert.equal("rolandoPelosGenerais" in completarEstado({ opcionais: { rolandoPel
 console.log("pré-batalha opcional: ok");
 
 /* Batalha em andamento: configurador não ressuscita general/substituto trocados em jogo */
-const emJogo = completarEstado({ iniciada: true, exercitos: [
-	{ general: { uuid: "Actor.nm", nome: "Nobre Menor", guerra: 12 }, substituto: { uuid: null, nome: "", img: null } }, {}
-] });
-const rascunhoAntigo = completarEstado({ iniciada: true, exercitos: [
-	{ general: { uuid: "Actor.ay", nome: "Ayleth", guerra: 17 }, substituto: { uuid: "Actor.nm", nome: "Nobre Menor" } }, {}
-] });
+const emJogo = completarEstado({
+	iniciada: true, exercitos: [
+		{ general: { uuid: "Actor.nm", nome: "Nobre Menor", guerra: 12 }, substituto: { uuid: null, nome: "", img: null } }, {}
+	]
+});
+const rascunhoAntigo = completarEstado({
+	iniciada: true, exercitos: [
+		{ general: { uuid: "Actor.ay", nome: "Ayleth", guerra: 17 }, substituto: { uuid: "Actor.nm", nome: "Nobre Menor" } }, {}
+	]
+});
 let cfg = aplicarConfiguracao(emJogo, rascunhoAntigo, { comandoEditado: [false, false] });
 assert.equal(cfg.exercitos[0].general.nome, "Nobre Menor", "sem edição: mantém o substituto que assumiu");
 assert.equal(cfg.exercitos[0].substituto.nome, "");

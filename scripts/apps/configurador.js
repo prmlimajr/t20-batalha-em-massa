@@ -12,7 +12,7 @@ import { dadosInimigo, rolarInimigo } from "../rolagens.js";
 import { retratoVivo } from "../retratos.js";
 import { lerBatalha, gravarBatalha } from "../armazenamento.js";
 import {
-	retratoDeAtor, adicionarModificador, removerIndice, adicionarRetrato, adicionarHerois, moverIndice, duplicarIndice,
+	retratoDeAtor, adicionarModificador, removerIndice, adicionarRetrato, adicionarHerois, moverIndice, duplicarIndice, atorVoa,
 	aplicarConfiguracao, pendencias, listaOpcionais
 } from "../configuracao.js";
 
@@ -112,6 +112,7 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 			})),
 			modificadoresB2,
 			herois: e.herois.map((h) => retratoVivo(h)),
+			ceuAtivo: !!e.ceu?.ativo,
 			formulaInimigos: formulaInimigos(e.tabelaInimigos),
 			inimigos: this.aba === "inimigos"
 				? await Promise.all(e.tabelaInimigos.map((entrada, i) => dadosInimigo(entrada, i + 1)))
@@ -140,6 +141,12 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 		super._onRender(context, options);
 		const raiz = this.element;
 		this.#atualizarTitulo();
+		// Medidas da imagem do campo terrestre (a imagem ideal do céu tem as mesmas medidas).
+		for (const alvo of raiz.querySelectorAll(".t20bm-medidas[data-imagem]")) {
+			const img = new Image();
+			img.onload = () => { alvo.textContent = `(${img.naturalWidth} × ${img.naturalHeight} px)`; };
+			img.src = alvo.dataset.imagem;
+		}
 
 		// Soltar atores do diretório ou de compêndios.
 		for (const alvo of raiz.querySelectorAll("[data-soltar]")) {
@@ -176,7 +183,7 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 			return this.#definir("tabelaInimigos", [...this.rascunho.tabelaInimigos, retrato]);
 		}
 		if (modo === "herois") {
-			return this.#definir("herois", adicionarHerois(this.rascunho.herois, [retrato]));
+			return this.#definir("herois", adicionarHerois(this.rascunho.herois, [{ ...retrato, voa: atorVoa(ator) }]));
 		}
 		const lista = foundry.utils.getProperty(this.rascunho, caminhoCampo) ?? [];
 		this.#definir(caminhoCampo, adicionarRetrato(lista, retrato));
@@ -278,7 +285,7 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 	static #adicionarJogadores() {
 		const atores = game.actors.filter((a) => a.type === "character" && a.hasPlayerOwner);
 		if (!atores.length) return ui.notifications.info(L("Configurador.SemJogadores"));
-		this.#definir("herois", adicionarHerois(this.rascunho.herois, atores.map(retratoDeAtor)));
+		this.#definir("herois", adicionarHerois(this.rascunho.herois, atores.map((a) => ({ ...retratoDeAtor(a), voa: atorVoa(a) }))));
 	}
 
 	static #moverNaLista(_ev, alvo) {

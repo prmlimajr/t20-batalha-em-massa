@@ -41,4 +41,5 @@ node testes/posicionamento.test.mjs
 node testes/evento.test.mjs
 node testes/generais.test.mjs
 node testes/fim.test.mjs
+node testes/areas.test.mjs
 ```

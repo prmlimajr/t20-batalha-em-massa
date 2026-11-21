@@ -57,6 +57,8 @@ export function estadoPadrao(nome = "") {
 			{ posicao: "front", nome: "Front" },
 			{ posicao: "atras", nome: "Atrás das linhas inimigas" }
 		],
+		// Combate aéreo opcional (área 4, "Sob os céus"): nome, imagem e modificador do evento.
+		ceu: { ativo: false, nome: "Combate aéreo", imagem: "", mod: 5 },
 		rodada: novaRodada(),
 		historico: []
 	};

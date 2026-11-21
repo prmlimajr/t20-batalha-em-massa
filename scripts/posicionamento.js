@@ -11,10 +11,16 @@
  * - Mestre: move qualquer herói para qualquer área, a qualquer momento.
  */
 import { completarEstado } from "./estado.js";
-import { movimentoValido } from "./regras.js";
-import { POSICOES } from "./constantes.js";
+import { areaExiste, areasDisponiveis, umPasso, AREA_CEU } from "./areas.js";
 
 const vivo = (h) => !h.morto;
+
+/** Pode ir para "Sob os céus"? Com o grupo junto, todos os heróis vivos precisam voar. */
+export function podeSubir(estado, uuid) {
+	if (estado.opcionais.lobosSolitarios) return !!estado.herois.find((h) => h.uuid === uuid)?.voa;
+	const vivos = estado.herois.filter(vivo);
+	return vivos.length > 0 && vivos.every((h) => h.voa);
+}
 
 /** Área atual de um herói (com o grupo junto, a área do grupo; morto, onde caiu). */
 export function areaAtual(estado, uuid) {
@@ -51,14 +57,15 @@ export function validarMovimento(salvo, uuid, para, { ehGM, dono = false }) {
 	const heroi = e.herois.find((x) => x.uuid === uuid);
 	const de = areaAtual(e, uuid);
 	if (de === null) return { ok: false, motivo: "NaoEsta" };
-	if (!Number.isInteger(para) || para < 0 || para >= POSICOES.length) return { ok: false, motivo: "AreaInvalida" };
+	if (!Number.isInteger(para) || !areaExiste(e, para)) return { ok: false, motivo: "AreaInvalida" };
 	if (para === de) return { ok: false, motivo: "MesmaArea" };
 	if (e.fim) return { ok: false, motivo: "Encerrada" };
 	if (ehGM) return { ok: true };
 	if (!dono) return { ok: false, motivo: "NaoDono" };
 	if (heroi.morto) return { ok: false, motivo: "Morto" };
 	if (e.etapa !== "posicionamento") return { ok: false, motivo: "ForaDaEtapa" };
-	if (!movimentoValido(areaInicial(e, uuid), para)) return { ok: false, motivo: "UmaArea" };
+	if (!umPasso(e, areaInicial(e, uuid), para)) return { ok: false, motivo: "UmaArea" };
+	if (para === AREA_CEU && !podeSubir(e, uuid)) return { ok: false, motivo: e.opcionais.lobosSolitarios ? "NaoVoa" : "GrupoNaoVoa" };
 	return { ok: true };
 }
 
@@ -90,7 +97,7 @@ export function opcoesDeMovimento(salvo, { ehGM, ehDono }) {
 	return herois
 		.map((h) => {
 			const de = areaAtual(e, h.uuid);
-			const destinos = POSICOES.map((_, i) => i).filter((para) =>
+			const destinos = areasDisponiveis(e).filter((para) =>
 				validarMovimento(e, h.uuid, para, { ehGM, dono: true }).ok);
 			return {
 				uuid: h.uuid, nome: h.nome, de, inicio: areaInicial(e, h.uuid), morto: !!h.morto,
@@ -100,7 +107,13 @@ export function opcoesDeMovimento(salvo, { ehGM, ehDono }) {
 		.filter((o) => o.destinos.length);
 }
 
-/* ---------------- Heróis: remover e marcar como morto (mestre) ---------------- */
+/* ---------------- Heróis: remover, marcar como morto, voo (mestre) ---------------- */
+
+export function alternarVoo(salvo, uuid) {
+	const e = completarEstado(salvo);
+	e.herois = e.herois.map((h) => (h.uuid === uuid ? { ...h, voa: !h.voa } : h));
+	return e;
+}
 
 export function removerHeroi(salvo, uuid) {
 	const e = completarEstado(salvo);

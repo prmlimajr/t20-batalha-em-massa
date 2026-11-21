@@ -11,6 +11,7 @@
 import { EVENTOS, MECANICAS, BONUS_ESTANDARTE } from "./constantes.js";
 import { completarEstado } from "./estado.js";
 import { bonusEvento } from "./regras.js";
+import { AREA_CEU, BONUS_RESOLVER_CEU } from "./areas.js";
 
 const CAMPOS_NUMERICOS = ["dano", "danoLider", "danoOficial", "bonusManual"];
 
@@ -56,7 +57,7 @@ export function bonusDaArea(salvo, area) {
 		return Math.trunc(Number(ev.bonusManual) || 0);
 	}
 	const def = eventoPorChave(ev.chave);
-	return bonusEvento({
+	const base = bonusEvento({
 		tamanho: e.tamanho,
 		dano: Number(ev.dano) || 0,
 		danoLider: Number(ev.danoLider) || 0,
@@ -64,6 +65,8 @@ export function bonusDaArea(salvo, area) {
 		capitao: !!def?.capitao,
 		testePericia: !!ev.teste
 	});
+	// Sob os céus: resolver o evento (dar algum bônus) rende +2 a mais.
+	return area === AREA_CEU && base > 0 ? base + BONUS_RESOLVER_CEU : base;
 }
 
 /** Bônus de todas as áreas da rodada e o total. */

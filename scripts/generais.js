@@ -11,6 +11,7 @@ import { completarEstado } from "./estado.js";
 import { bonusPorDano, resultadoGenerais, verificarFimRodada, limiarVitoria } from "./regras.js";
 import { BONUS_TESTE_PERICIA, BONUS_ESTANDARTE } from "./constantes.js";
 import { eventoPorChave } from "./evento.js";
+import { nomeDaArea, AREA_CEU, BONUS_RESOLVER_CEU } from "./areas.js";
 
 const DEFESA = ["defender", "defenderContraDois"];
 
@@ -20,7 +21,7 @@ const DEFESA = ["defender", "defenderContraDois"];
 function itensDoEvento(e, area) {
 	const ev = e.rodada.eventos?.[area];
 	if (!ev) return [];
-	const nomeArea = e.areas[area]?.nome ?? "";
+	const nomeArea = nomeDaArea(e, area);
 	const onde = `${ev.nome}${nomeArea ? `, ${nomeArea}` : ""}`;
 	if (e.opcionais.acoesAbertas && ev.bonusManual !== undefined && ev.bonusManual !== null) {
 		const v = Math.trunc(Number(ev.bonusManual) || 0);
@@ -43,6 +44,7 @@ function itensDoEvento(e, area) {
 	}
 	if (def?.capitao && porDano >= 2) itens.push({ valor: 2, texto: `por vencer o capitão inimigo (${onde})` });
 	if (ev.teste) itens.push({ valor: BONUS_TESTE_PERICIA, texto: `por sucesso em teste de perícia no evento (${onde})` });
+	if (area === AREA_CEU && itens.length) itens.push({ valor: BONUS_RESOLVER_CEU, texto: `por resolver o evento sob os céus (${onde})` });
 	return itens;
 }
 

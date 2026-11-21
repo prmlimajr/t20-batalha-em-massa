@@ -20,7 +20,7 @@
 		</div>
 		<div class="form-group">
 			<label>{{localize "T20BM.Configurador.Local"}}</label>
-			<div class="form-fields"><input type="text" name="local" value="{{e.local}}" placeholder="Oiteiro dos Coroados"></div>
+			<div class="form-fields"><input type="text" name="local" value="{{e.local}}" placeholder="Outeiro dos Coroados"></div>
 		</div>
 		<div class="form-group">
 			<label>{{localize "T20BM.Configurador.Tamanho"}}</label>
@@ -196,6 +196,7 @@
 				{{#if img}}<img class="t20bm-retrato" src="{{img}}" alt="">{{/if}}
 				<a class="t20bm-nome" data-action="abrirFicha" data-uuid="{{uuid}}">{{nome}}</a>
 				{{#if atorSumiu}}<span class="t20bm-alerta">{{localize "T20BM.Configurador.AtorSumiu"}}</span>{{/if}}
+				<label class="t20bm-voa" data-tooltip="T20BM.Ceu.VoaDica"><input type="checkbox" name="herois.{{@index}}.voa" {{#if voa}}checked{{/if}}> <i class="fa-solid fa-feather"></i> {{localize "T20BM.Ceu.Voa"}}</label>
 				<button type="button" class="t20bm-icone" data-action="removerDaLista" data-campo="herois" data-indice="{{@index}}" data-tooltip="T20BM.Configurador.Remover"><i class="fa-solid fa-xmark"></i></button>
 			</li>
 			{{/each}}
@@ -246,6 +247,34 @@
 	{{#if (eq aba "campo")}}
 	<section class="t20bm-aba">
 		<p class="hint">{{localize "T20BM.Configurador.CampoDica"}}</p>
+		<fieldset class="t20bm-area t20bm-area-ceu-config">
+			<legend><label><input type="checkbox" name="ceu.ativo" data-redesenhar {{#if e.ceu.ativo}}checked{{/if}}> {{localize "T20BM.Ceu.Ativar"}}</label></legend>
+			<p class="hint">{{localize "T20BM.Ceu.Dica"}}</p>
+			{{#if e.ceu.ativo}}
+			<div class="form-group">
+				<label>{{localize "T20BM.Configurador.NomeArea"}}</label>
+				<div class="form-fields"><input type="text" name="ceu.nome" value="{{e.ceu.nome}}"></div>
+			</div>
+			<div class="form-group">
+				<label>{{localize "T20BM.Configurador.SubtituloArea"}}</label>
+				<div class="form-fields"><span class="t20bm-valor">{{localize "T20BM.Ceu.Subtitulo"}}</span></div>
+			</div>
+			<div class="form-group">
+				<label>{{localize "T20BM.Ceu.Mod"}}</label>
+				<div class="form-fields"><input type="number" step="1" name="ceu.mod" value="{{e.ceu.mod}}"></div>
+				<p class="hint">{{localize "T20BM.Ceu.ModDica"}}</p>
+			</div>
+			<div class="form-group">
+				<label>{{localize "T20BM.Ceu.Imagem"}}</label>
+				<div class="t20bm-linha t20bm-campo-imagem">
+					<input type="text" name="ceu.imagem" value="{{e.ceu.imagem}}" data-redesenhar>
+					<button type="button" class="t20bm-icone" data-action="escolherImagem" data-campo="ceu.imagem" data-tooltip="T20BM.Configurador.Escolher"><i class="fa-solid fa-file-image"></i></button>
+				</div>
+				<p class="hint">{{localize "T20BM.Ceu.ImagemDica"}} <span class="t20bm-medidas" data-imagem="{{e.imagens.campo}}"></span></p>
+			</div>
+			{{#if e.ceu.imagem}}<img class="t20bm-previa campo" src="{{e.ceu.imagem}}" alt="">{{/if}}
+			{{/if}}
+		</fieldset>
 		{{#each areas}}
 		<fieldset class="t20bm-area">
 			<legend>{{posicaoNome}} ({{#if (gte mod 0)}}+{{/if}}{{mod}})</legend>

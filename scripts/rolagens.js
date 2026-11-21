@@ -3,8 +3,9 @@
  * T5: sorteio de inimigo. T8: testes de pré-batalha e lembretes. (T10/T11 acrescentam evento e generais.)
  */
 import { MODULE_ID, L, caminho } from "./modulo.js";
-import { formulaInimigos, inimigoDaFace, vencedorOposto, motivacao, modPosicao, eventoPorTotal, cdDaBatalha } from "./regras.js";
-import { CD_MOTIVACAO, TEXTO_PREPARACAO, POSICOES, MECANICAS, TAMANHOS, PONTOS_DERROTAR_GENERAL, PENALIDADE_NOVO_GENERAL } from "./constantes.js";
+import { formulaInimigos, inimigoDaFace, vencedorOposto, motivacao, eventoPorTotal, cdDaBatalha } from "./regras.js";
+import { modDaArea, nomeDaArea, subtituloDaArea, AREA_CEU, CD_EXTRA_CEU, BONUS_RESOLVER_CEU } from "./areas.js";
+import { CD_MOTIVACAO, TEXTO_PREPARACAO, MECANICAS, TAMANHOS, PONTOS_DERROTAR_GENERAL, PENALIDADE_NOVO_GENERAL } from "./constantes.js";
 import { retratoVivo } from "./retratos.js";
 import { resumoInimigo, comSinal } from "./inimigos.js";
 
@@ -206,7 +207,7 @@ export async function lembretePreparacao(turno) {
  * @returns {Promise<{ total: number, d20: number, chave: string, nome: string }>}
  */
 export async function rolarEvento(estado, area, { ajuste = 0 } = {}) {
-	const mod = modPosicao(area) + ajuste;
+	const mod = modDaArea(estado, area) + ajuste;
 	const roll = await new Roll("1d20 + @mod", { mod }).evaluate();
 	const d20 = roll.dice[0]?.total ?? roll.total - mod;
 	const evento = eventoPorTotal(roll.total);
@@ -214,8 +215,8 @@ export async function rolarEvento(estado, area, { ajuste = 0 } = {}) {
 	const tamanho = TAMANHOS[estado.tamanho] ?? TAMANHOS.media;
 	const pericias = (evento.pericias ?? []).map(nomePericia);
 	const content = await renderizar("evento.hbs", {
-		area: estado.areas[area]?.nome || POSICOES[area].nome,
-		posicao: POSICOES[area].nome,
+		area: nomeDaArea(estado, area),
+		posicao: subtituloDaArea(area),
 		mod: comSinal(mod),
 		d20,
 		total: roll.total,
@@ -224,7 +225,8 @@ export async function rolarEvento(estado, area, { ajuste = 0 } = {}) {
 		mecanica: mecanica?.nome,
 		mecanicaTexto: mecanica?.texto,
 		pericias: pericias.join(", "),
-		cd: pericias.length ? cdDaBatalha(estado.tamanho) : null,
+		cd: pericias.length ? cdDaBatalha(estado.tamanho) + (area === AREA_CEU ? CD_EXTRA_CEU : 0) : null,
+		notaCeu: area === AREA_CEU ? L("Ceu.NotaEvento", { cd: CD_EXTRA_CEU, bonus: BONUS_RESOLVER_CEU }) : null,
 		combate: !!mecanica?.combate,
 		danoPorBonus: tamanho.dano
 	});

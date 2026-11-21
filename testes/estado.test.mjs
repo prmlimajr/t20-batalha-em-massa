@@ -51,7 +51,7 @@ assert.equal(salvo.exercitos.length, 1, "não altera o objeto salvo");
 
 /* reiniciarBatalha: mantém configuração, volta ao início */
 const andamento = completarEstado({
-	nome: "X", local: "Oiteiro", iniciada: true, turno: 5, etapa: "evento", grupoArea: 3,
+	nome: "X", local: "Outeiro", iniciada: true, turno: 5, etapa: "evento", grupoArea: 3,
 	opcionais: { lobosSolitarios: true },
 	exercitos: [
 		{ nome: "A", pontosIniciais: 2, pontos: 9, estandartes: [{ nome: "Leão", carregadoPor: "Actor.h" }] },
@@ -74,7 +74,7 @@ assert.equal(r.exercitos[0].estandartes[0].nome, "Leão");
 assert.equal(r.rodada.danoTotal, 0);
 assert.deepEqual(r.historico, []);
 assert.equal(r.opcionais.lobosSolitarios, true, "regras opcionais ficam");
-assert.equal(r.local, "Oiteiro");
+assert.equal(r.local, "Outeiro");
 assert.deepEqual(r.tabelaInimigos, ["Actor.i"]);
 assert.equal(andamento.turno, 5, "não altera o original");
 

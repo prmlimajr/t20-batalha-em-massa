@@ -4,7 +4,7 @@ import { visaoBatalha, etapasDoTurno, areaDoHeroi } from "../scripts/visao.js";
 import { completarEstado } from "../scripts/estado.js";
 
 const svalas = {
-	nome: "Batalha de Svalas", local: "Oiteiro dos Coroados", tamanho: "media",
+	nome: "Batalha de Svalas", local: "Outeiro dos Coroados", tamanho: "media",
 	iniciada: true, turno: 4, etapa: "evento", grupoArea: 2,
 	exercitos: [
 		{
@@ -52,7 +52,7 @@ assert.deepEqual(v.areas.map((a) => a.romano), ["I", "II", "III", "IV"]);
 assert.deepEqual(v.areas.map((a) => a.subtitulo), ["Acampamento", "Retaguarda", "Front", "Atrás das linhas inimigas"]);
 assert.deepEqual(v.areas.map((a) => a.destaque), [false, false, true, false]);
 assert.deepEqual(v.areas[2].herois.map((h) => h.nome), ["H1", "H2"]);
-assert.deepEqual(v.mensagem, { etapa: "evento", area: "Front" });
+assert.deepEqual(v.mensagem, { etapa: "evento", area: "Front", ceu: false });
 
 // Lobos solitários: cada herói na sua área, todas destacadas
 const lobos = visaoBatalha({ ...svalas, opcionais: { lobosSolitarios: true } });
@@ -67,7 +67,7 @@ assert.ok(vazia.etapas.every((e) => e.futura && !e.atual && !e.feita));
 assert.equal(vazia.exercitos[0].general, null);
 assert.deepEqual(vazia.exercitos[0].personalidades, []);
 assert.deepEqual(vazia.areas.map((a) => a.destaque), [false, true, false, false], "sem heróis: destaca a Retaguarda");
-assert.deepEqual(vazia.mensagem, { etapa: "pre", area: "Retaguarda" });
+assert.deepEqual(vazia.mensagem, { etapa: "pre", area: "Retaguarda", ceu: false });
 assert.equal(vazia.limiar, 10);
 assert.equal(visaoBatalha({ tamanho: "epica", opcionais: { limiarVariado: true } }).limiar, 20);
 
@@ -91,12 +91,20 @@ assert.equal(comEventos.resolucoes.length, 1);
 assert.deepEqual([comEventos.resolucoes[0].bonus, comEventos.resolucoes[0].bonusTxt], [4, "+4"]);
 assert.equal(comEventos.resolucoes[0].mecanica, "Atacar e teste de perícia");
 assert.deepEqual([comEventos.resolucoes[0].campos.dano, comEventos.resolucoes[0].campos.teste], [true, true]);
-assert.equal(comEventos.bonusEvento, 4);
+assert.equal(comEventos.bonusEvento, 6, "total inclui o estandarte que o herói segura (+2)");
+assert.equal(comEventos.bonusEstandartes, 2);
 assert.equal(comEventos.areas[2].bonusTxt, "+4");
 assert.equal(comEventos.areas[2].ajuste, -2);
 assert.equal(comEventos.areas[2].herois[0].estandarte, true);
 assert.equal(comEventos.areas[1].bonusTxt, "", "área sem evento: sem bônus");
 assert.equal(visaoBatalha({}).resolucoes.length, 0);
+// Erguer estandarte: o +2 aparece na linha e na área do evento
+const erguer = visaoBatalha({
+	tamanho: "media", etapa: "evento", grupoArea: 1,
+	herois: [{ uuid: "h1", nome: "Amir" }, { uuid: "h3", nome: "Liliana", estandarte: true }],
+	rodada: { eventos: { 1: { chave: "erguerEstandarte", nome: "Erguer estandarte" } } }
+});
+assert.deepEqual([erguer.resolucoes[0].bonusTxt, erguer.areas[1].bonusTxt, erguer.bonusEvento], ["+2", "+2", 2]);
 console.log("visao (resolução): ok");
 
 /* Substituto que assumiu sai da área de substituto */
