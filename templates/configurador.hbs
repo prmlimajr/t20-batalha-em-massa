@@ -1,0 +1,285 @@
+<div class="t20bm-config">
+	<nav class="t20bm-abas">
+		{{#each abas}}
+		<button type="button" class="t20bm-aba-botao {{#if ativa}}ativa{{/if}}" data-action="aba" data-aba="{{chave}}">{{rotulo}}</button>
+		{{/each}}
+	</nav>
+
+	{{#if avisos.length}}
+	<ul class="t20bm-avisos">
+		{{#each avisos}}<li><i class="fa-solid fa-triangle-exclamation"></i> {{this}}</li>{{/each}}
+	</ul>
+	{{/if}}
+
+	{{!-- ======================= GERAL ======================= --}}
+	{{#if (eq aba "geral")}}
+	<section class="t20bm-aba">
+		<div class="form-group">
+			<label>{{localize "T20BM.Configurador.Nome"}}</label>
+			<div class="form-fields"><input type="text" name="nome" value="{{e.nome}}" placeholder="Batalha de Svalas"></div>
+		</div>
+		<div class="form-group">
+			<label>{{localize "T20BM.Configurador.Local"}}</label>
+			<div class="form-fields"><input type="text" name="local" value="{{e.local}}" placeholder="Oiteiro dos Coroados"></div>
+		</div>
+		<div class="form-group">
+			<label>{{localize "T20BM.Configurador.Tamanho"}}</label>
+			<div class="form-fields">
+				<select name="tamanho" data-redesenhar>
+					{{#each tamanhos}}<option value="{{chave}}" {{#if selecionado}}selected{{/if}}>{{rotulo}}</option>{{/each}}
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label>{{localize "T20BM.Configurador.Limiar"}}</label>
+			<div class="form-fields"><span class="t20bm-valor">{{limiar}}</span></div>
+			<p class="hint">{{#if limiarVariado}}{{localize "T20BM.Configurador.LimiarVariado"}}{{else}}{{localize "T20BM.Configurador.LimiarFixo"}}{{/if}}</p>
+		</div>
+		<div class="form-group">
+			<label>{{localize "T20BM.Configurador.ImagemFundo"}}</label>
+			<div class="form-fields">
+				<input type="text" name="imagens.fundo" value="{{e.imagens.fundo}}">
+				<button type="button" class="t20bm-icone" data-action="escolherImagem" data-campo="imagens.fundo" data-tooltip="T20BM.Configurador.Escolher"><i class="fa-solid fa-file-image"></i></button>
+			</div>
+		</div>
+		<div class="form-group">
+			<label>{{localize "T20BM.Configurador.ImagemCampo"}}</label>
+			<div class="form-fields">
+				<input type="text" name="imagens.campo" value="{{e.imagens.campo}}">
+				<button type="button" class="t20bm-icone" data-action="escolherImagem" data-campo="imagens.campo" data-tooltip="T20BM.Configurador.Escolher"><i class="fa-solid fa-file-image"></i></button>
+			</div>
+		</div>
+	</section>
+	{{/if}}
+
+	{{!-- ======================= EXÉRCITOS ======================= --}}
+	{{#if (eq aba "exercitos")}}
+	<section class="t20bm-aba t20bm-exercitos">
+		{{#each exercitos}}
+		<div class="t20bm-exercito {{lado}}">
+			<h3 class="t20bm-rotulo-lado">{{rotuloLado}}</h3>
+
+			<div class="form-group">
+				<label>{{localize "T20BM.Configurador.NomeExercito"}}</label>
+				<div class="form-fields"><input type="text" name="exercitos.{{i}}.nome" value="{{nome}}"></div>
+			</div>
+			<div class="form-group">
+				<label>{{localize "T20BM.Configurador.PontosIniciais"}}</label>
+				<div class="form-fields"><input type="number" step="1" name="exercitos.{{i}}.pontosIniciais" value="{{pontosIniciais}}"></div>
+			</div>
+			{{#if ../iniciada}}
+			<div class="form-group">
+				<label>{{localize "T20BM.Configurador.PontosAtuais"}}</label>
+				<div class="form-fields"><input type="number" step="1" name="exercitos.{{i}}.pontos" value="{{pontos}}"></div>
+				<p class="hint">{{localize "T20BM.Configurador.PontosAtuaisDica"}}</p>
+			</div>
+			{{/if}}
+
+			{{!-- General --}}
+			<h4>{{localize "T20BM.Configurador.General"}}</h4>
+			<div class="t20bm-slot" data-soltar="exercitos.{{i}}.general" data-modo="slot">
+				{{#if general.vazio}}
+				<span class="t20bm-soltar-aqui">{{localize "T20BM.Configurador.SolteAtor"}}</span>
+				{{else}}
+				{{#if general.img}}<img class="t20bm-retrato grande" src="{{general.img}}" alt="">{{/if}}
+				<div class="t20bm-slot-info">
+					{{#if general.temAtor}}
+					<a class="t20bm-nome" data-action="abrirFicha" data-uuid="{{general.uuid}}">{{general.nome}}</a>
+					{{else}}
+					<input type="text" name="exercitos.{{i}}.general.nome" value="{{general.nome}}" placeholder="{{localize 'T20BM.Configurador.NomeManual'}}">
+					{{/if}}
+					{{#if general.atorSumiu}}<span class="t20bm-alerta">{{localize "T20BM.Configurador.AtorSumiu"}}</span>{{/if}}
+				</div>
+				<button type="button" class="t20bm-icone" data-action="limparSlot" data-campo="exercitos.{{i}}.general" data-tooltip="T20BM.Configurador.Remover"><i class="fa-solid fa-xmark"></i></button>
+				{{/if}}
+			</div>
+			<div class="t20bm-linha">
+				<button type="button" data-action="escolherImagem" data-campo="exercitos.{{i}}.general.img"><i class="fa-solid fa-file-image"></i> {{localize "T20BM.Configurador.ImagemManual"}}</button>
+				<label class="t20bm-guerra">
+					{{localize "T20BM.Configurador.Guerra"}}
+					<input type="number" step="1" name="exercitos.{{i}}.general.guerra" value="{{general.guerra}}" placeholder="{{#if (ne general.guerraFicha null)}}{{general.guerraFicha}}{{/if}}">
+				</label>
+			</div>
+			<p class="hint">{{#if (ne general.guerraFicha null)}}{{localize "T20BM.Configurador.GuerraDaFicha" valor=general.guerraFicha}}{{else}}{{localize "T20BM.Configurador.GuerraManual"}}{{/if}}</p>
+
+			{{!-- Substituto --}}
+			<h4>{{localize "T20BM.Configurador.Substituto"}}</h4>
+			<div class="t20bm-slot pequeno" data-soltar="exercitos.{{i}}.substituto" data-modo="slot">
+				{{#if substituto.vazio}}
+				<span class="t20bm-soltar-aqui">{{localize "T20BM.Configurador.SolteAtor"}}</span>
+				{{else}}
+				{{#if substituto.img}}<img class="t20bm-retrato" src="{{substituto.img}}" alt="">{{/if}}
+				<div class="t20bm-slot-info">
+					{{#if substituto.temAtor}}
+					<a class="t20bm-nome" data-action="abrirFicha" data-uuid="{{substituto.uuid}}">{{substituto.nome}}</a>
+					{{else}}
+					<input type="text" name="exercitos.{{i}}.substituto.nome" value="{{substituto.nome}}" placeholder="{{localize 'T20BM.Configurador.NomeManual'}}">
+					{{/if}}
+				</div>
+				<button type="button" class="t20bm-icone" data-action="limparSlot" data-campo="exercitos.{{i}}.substituto" data-tooltip="T20BM.Configurador.Remover"><i class="fa-solid fa-xmark"></i></button>
+				{{/if}}
+			</div>
+			<div class="t20bm-linha">
+				<button type="button" data-action="escolherImagem" data-campo="exercitos.{{i}}.substituto.img"><i class="fa-solid fa-file-image"></i> {{localize "T20BM.Configurador.ImagemManual"}}</button>
+			</div>
+
+			{{!-- Personalidades --}}
+			<h4>{{localize "T20BM.Configurador.Personalidades"}}</h4>
+			<ul class="t20bm-lista-retratos" data-soltar="exercitos.{{i}}.personalidades" data-modo="lista">
+				{{#each personalidades}}
+				<li>
+					{{#if img}}<img class="t20bm-retrato" src="{{img}}" alt="">{{/if}}
+					<a class="t20bm-nome" data-action="abrirFicha" data-uuid="{{uuid}}">{{nome}}</a>
+					<button type="button" class="t20bm-icone" data-action="removerDaLista" data-campo="exercitos.{{../i}}.personalidades" data-indice="{{@index}}" data-tooltip="T20BM.Configurador.Remover"><i class="fa-solid fa-xmark"></i></button>
+				</li>
+				{{/each}}
+				<li class="t20bm-soltar-aqui">{{localize "T20BM.Configurador.SolteAtores"}}</li>
+			</ul>
+
+			{{!-- Estandartes --}}
+			<h4>{{localize "T20BM.Configurador.Estandartes"}}</h4>
+			<ul class="t20bm-lista-retratos" data-soltar="exercitos.{{i}}.estandartes" data-modo="lista">
+				{{#each estandartes}}
+				<li>
+					{{#if img}}<img class="t20bm-retrato quadrado" src="{{img}}" alt="">{{else}}<span class="t20bm-retrato quadrado vazio"></span>{{/if}}
+					{{#if temAtor}}
+					<a class="t20bm-nome" data-action="abrirFicha" data-uuid="{{uuid}}">{{nome}}</a>
+					{{else}}
+					<input type="text" name="exercitos.{{../i}}.estandartes.{{@index}}.nome" value="{{nome}}">
+					<button type="button" class="t20bm-icone" data-action="escolherImagem" data-campo="exercitos.{{../i}}.estandartes.{{@index}}.img" data-tooltip="T20BM.Configurador.Escolher"><i class="fa-solid fa-file-image"></i></button>
+					{{/if}}
+					<button type="button" class="t20bm-icone" data-action="removerDaLista" data-campo="exercitos.{{../i}}.estandartes" data-indice="{{@index}}" data-tooltip="T20BM.Configurador.Remover"><i class="fa-solid fa-xmark"></i></button>
+				</li>
+				{{/each}}
+				<li class="t20bm-soltar-aqui">
+					{{localize "T20BM.Configurador.SolteEstandarte"}}
+					<button type="button" data-action="adicionarEstandarte" data-lado="{{i}}"><i class="fa-solid fa-plus"></i> {{localize "T20BM.Configurador.EstandarteImagem"}}</button>
+				</li>
+			</ul>
+
+			{{!-- Modificadores de Guerra --}}
+			<h4>{{localize "T20BM.Configurador.Modificadores"}} <span class="t20bm-total">({{#if (gte totalModificadores 0)}}+{{/if}}{{totalModificadores}})</span></h4>
+			<ul class="t20bm-modificadores">
+				{{#each modificadores}}
+				<li>
+					{{#if (eq chave "personalizado")}}
+					<input type="text" name="exercitos.{{../i}}.modificadores.{{@index}}.nome" value="{{nome}}">
+					{{else}}
+					<span class="t20bm-mod-nome" title="{{detalhe}}">{{nome}} <small>({{detalhe}})</small></span>
+					{{/if}}
+					<input type="number" step="1" class="t20bm-mod-valor" name="exercitos.{{../i}}.modificadores.{{@index}}.valor" value="{{valor}}" data-redesenhar>
+					<button type="button" class="t20bm-icone" data-action="removerDaLista" data-campo="exercitos.{{../i}}.modificadores" data-indice="{{@index}}" data-tooltip="T20BM.Configurador.Remover"><i class="fa-solid fa-xmark"></i></button>
+				</li>
+				{{/each}}
+			</ul>
+			<div class="t20bm-linha">
+				<select data-modificador="{{i}}">
+					{{#each ../modificadoresB2}}<option value="{{chave}}">{{rotulo}}</option>{{/each}}
+				</select>
+				<button type="button" class="t20bm-icone" data-action="adicionarModificador" data-lado="{{i}}" data-tooltip="T20BM.Configurador.Adicionar"><i class="fa-solid fa-plus"></i></button>
+			</div>
+			<button type="button" data-action="adicionarPersonalizado" data-lado="{{i}}"><i class="fa-solid fa-plus"></i> {{localize "T20BM.Configurador.ModificadorPersonalizado"}}</button>
+		</div>
+		{{/each}}
+	</section>
+	{{/if}}
+
+	{{!-- ======================= HERÓIS ======================= --}}
+	{{#if (eq aba "herois")}}
+	<section class="t20bm-aba">
+		<p class="hint">{{localize "T20BM.Configurador.HeroisDica"}}</p>
+		<ul class="t20bm-lista-retratos" data-soltar="herois" data-modo="herois">
+			{{#each herois}}
+			<li>
+				{{#if img}}<img class="t20bm-retrato" src="{{img}}" alt="">{{/if}}
+				<a class="t20bm-nome" data-action="abrirFicha" data-uuid="{{uuid}}">{{nome}}</a>
+				{{#if atorSumiu}}<span class="t20bm-alerta">{{localize "T20BM.Configurador.AtorSumiu"}}</span>{{/if}}
+				<button type="button" class="t20bm-icone" data-action="removerDaLista" data-campo="herois" data-indice="{{@index}}" data-tooltip="T20BM.Configurador.Remover"><i class="fa-solid fa-xmark"></i></button>
+			</li>
+			{{/each}}
+			<li class="t20bm-soltar-aqui">{{localize "T20BM.Configurador.SolteAtores"}}</li>
+		</ul>
+		<button type="button" data-action="adicionarJogadores"><i class="fa-solid fa-users"></i> {{localize "T20BM.Configurador.AdicionarJogadores"}}</button>
+	</section>
+	{{/if}}
+
+	{{!-- ======================= INIMIGOS ======================= --}}
+	{{#if (eq aba "inimigos")}}
+	<section class="t20bm-aba">
+		<p class="hint">{{localize "T20BM.Inimigos.Dica"}}</p>
+		<div class="t20bm-linha t20bm-dado">
+			<span>{{localize "T20BM.Inimigos.Dado"}}: <strong>{{#if formulaInimigos}}{{formulaInimigos}}{{else}}—{{/if}}</strong></span>
+			<button type="button" data-action="testarSorteio" {{#unless formulaInimigos}}disabled{{/unless}}><i class="fa-solid fa-dice-d20"></i> {{localize "T20BM.Inimigos.Testar"}}</button>
+		</div>
+		<ol class="t20bm-inimigos" data-soltar="tabelaInimigos" data-modo="inimigos">
+			{{#each inimigos}}
+			<li class="t20bm-inimigo">
+				<span class="t20bm-face">{{face}}</span>
+				{{#if img}}<img class="t20bm-retrato" src="{{img}}" alt="">{{/if}}
+				<div class="t20bm-inimigo-info">
+					<a class="t20bm-nome" data-action="abrirFicha" data-uuid="{{uuid}}">{{nome}}</a>
+					{{#if atorSumiu}}<span class="t20bm-alerta">{{localize "T20BM.Configurador.AtorSumiu"}}</span>{{/if}}
+					{{#if naoAmeaca}}<span class="t20bm-alerta">{{localize "T20BM.Inimigos.NaoAmeaca"}}</span>{{/if}}
+					<span class="t20bm-inimigo-stats">ND {{#if nd}}{{nd}}{{else}}—{{/if}} · {{localize "T20BM.Inimigos.Defesa"}} {{#if defesa}}{{defesa}}{{else}}—{{/if}} · Fort {{fortTxt}} · Ref {{reflTxt}} · Von {{vontTxt}}</span>
+					{{#if ataquesTexto.length}}
+					{{#each ataquesTexto}}<span class="t20bm-inimigo-ataques">{{this}}</span>{{/each}}
+					{{else}}
+					{{#each armas}}<span class="t20bm-inimigo-ataques">{{nome}} {{bonusTxt}}{{#if dano}} ({{dano}}, {{critico}}){{/if}}</span>{{/each}}
+					{{/if}}
+				</div>
+				<div class="t20bm-item-acoes">
+					<button type="button" class="t20bm-icone" data-action="moverNaLista" data-campo="tabelaInimigos" data-indice="{{@index}}" data-direcao="-1" data-tooltip="T20BM.Inimigos.Subir" {{#if @first}}disabled{{/if}}><i class="fa-solid fa-arrow-up"></i></button>
+					<button type="button" class="t20bm-icone" data-action="moverNaLista" data-campo="tabelaInimigos" data-indice="{{@index}}" data-direcao="1" data-tooltip="T20BM.Inimigos.Descer" {{#if @last}}disabled{{/if}}><i class="fa-solid fa-arrow-down"></i></button>
+					<button type="button" class="t20bm-icone" data-action="duplicarNaLista" data-campo="tabelaInimigos" data-indice="{{@index}}" data-tooltip="T20BM.Inimigos.Repetir"><i class="fa-solid fa-clone"></i></button>
+					<button type="button" class="t20bm-icone" data-action="removerDaLista" data-campo="tabelaInimigos" data-indice="{{@index}}" data-tooltip="T20BM.Configurador.Remover"><i class="fa-solid fa-xmark"></i></button>
+				</div>
+			</li>
+			{{/each}}
+			<li class="t20bm-soltar-aqui">{{localize "T20BM.Inimigos.Solte"}}</li>
+		</ol>
+	</section>
+	{{/if}}
+
+	{{!-- ======================= CAMPO ======================= --}}
+	{{#if (eq aba "campo")}}
+	<section class="t20bm-aba">
+		<p class="hint">{{localize "T20BM.Configurador.CampoDica"}}</p>
+		{{#each areas}}
+		<fieldset class="t20bm-area">
+			<legend>{{posicaoNome}} ({{#if (gte mod 0)}}+{{/if}}{{mod}})</legend>
+			<div class="form-group">
+				<label>{{localize "T20BM.Configurador.NomeArea"}}</label>
+				<div class="form-fields"><input type="text" name="areas.{{i}}.nome" value="{{nome}}"></div>
+			</div>
+			<div class="form-group">
+				<label>{{localize "T20BM.Configurador.SubtituloArea"}}</label>
+				<div class="form-fields"><input type="text" name="areas.{{i}}.subtitulo" value="{{subtitulo}}"></div>
+			</div>
+		</fieldset>
+		{{/each}}
+	</section>
+	{{/if}}
+
+	{{!-- ======================= REGRAS OPCIONAIS ======================= --}}
+	{{#if (eq aba "opcionais")}}
+	<section class="t20bm-aba">
+		<p class="hint">{{localize "T20BM.Opcionais.Dica"}}</p>
+		{{#each opcionais}}
+		<label class="t20bm-opcional {{#if ativa}}ativa{{/if}} {{#if travada}}travada{{/if}}">
+			<input type="checkbox" name="opcionais.{{chave}}" data-redesenhar {{#if ativa}}checked{{/if}} {{#if travada}}disabled{{/if}}>
+			<span class="t20bm-opcional-corpo">
+				<strong>{{nome}}</strong>
+				{{#if travada}}<span class="t20bm-alerta"><i class="fa-solid fa-lock"></i> {{localize "T20BM.Opcionais.Travada"}}</span>{{/if}}
+				<span class="t20bm-opcional-texto">{{texto}}</span>
+			</span>
+		</label>
+		{{/each}}
+	</section>
+	{{/if}}
+
+	<footer class="t20bm-rodape">
+		<button type="button" data-action="salvar" {{#unless alterado}}class="sem-alteracao"{{/unless}}>
+			<i class="fa-solid fa-floppy-disk"></i> {{localize "T20BM.Configurador.Salvar"}}
+		</button>
+	</footer>
+</div>

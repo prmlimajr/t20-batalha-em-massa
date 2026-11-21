@@ -6,6 +6,7 @@
  */
 import { L, caminho } from "../modulo.js";
 import { TAMANHOS } from "../constantes.js";
+import { ConfiguradorBatalha } from "./configurador.js";
 import {
 	listarBatalhas, idExibida, lerBatalha, criarBatalha, duplicarBatalha, atualizarBatalha, reiniciar,
 	apagarBatalha, exibirParaTodos, encerrarExibicao
@@ -72,9 +73,8 @@ export class GerenciadorBatalhas extends HandlebarsApplicationMixin(ApplicationV
 		await criarBatalha(nome);
 	}
 
-	static async #configurar(_evento, alvo) {
-		// T4: configurador da batalha.
-		ui.notifications.info(L("Gerenciador.ConfiguradorEmBreve"));
+	static #configurar(_evento, alvo) {
+		ConfiguradorBatalha.abrir(idDe(alvo));
 	}
 
 	static async #renomear(_evento, alvo) {

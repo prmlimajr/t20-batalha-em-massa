@@ -1,0 +1,31 @@
+<div class="t20bm-cartao t20bm-cartao-inimigo">
+	<header>
+		{{#if img}}<img class="t20bm-cartao-retrato" src="{{img}}" alt="">{{/if}}
+		<div>
+			<span class="t20bm-cartao-rotulo">{{localize "T20BM.Inimigos.Cartao"}} · {{formula}} = {{face}}</span>
+			<h3>{{link}}</h3>
+			{{#if heroi}}<span class="t20bm-cartao-rotulo">{{localize "T20BM.Inimigos.Contra" heroi=heroi}}</span>{{/if}}
+		</div>
+	</header>
+	{{#if atorSumiu}}<p class="t20bm-alerta">{{localize "T20BM.Configurador.AtorSumiu"}}</p>{{/if}}
+	<dl class="t20bm-cartao-stats">
+		<div><dt>ND</dt><dd>{{#if nd}}{{nd}}{{else}}—{{/if}}</dd></div>
+		<div><dt>{{localize "T20BM.Inimigos.Defesa"}}</dt><dd>{{#if defesa}}{{defesa}}{{else}}—{{/if}}</dd></div>
+		<div><dt>Fort</dt><dd>{{fortTxt}}</dd></div>
+		<div><dt>Ref</dt><dd>{{reflTxt}}</dd></div>
+		<div><dt>Von</dt><dd>{{vontTxt}}</dd></div>
+		{{#if pv}}<div><dt>PV</dt><dd>{{pv}}</dd></div>{{/if}}
+	</dl>
+	{{#if ataquesTexto.length}}
+	<ul class="t20bm-cartao-ataques">{{#each ataquesTexto}}<li>{{this}}</li>{{/each}}</ul>
+	{{else if armas.length}}
+	<ul class="t20bm-cartao-ataques">
+		{{#each armas}}<li><strong>{{nome}}</strong> {{bonusTxt}}{{#if dano}} ({{dano}}, {{critico}}){{/if}}</li>{{/each}}
+	</ul>
+	{{/if}}
+	{{#if danoMedio}}{{#if armas.length}}
+	<ul class="t20bm-cartao-ataques t20bm-dano-medio">
+		{{#each armas}}{{#if dano}}<li>{{localize "T20BM.Inimigos.DanoMedio" nome=nome medio=danoMedio critico=danoMedioCritico}}</li>{{/if}}{{/each}}
+	</ul>
+	{{/if}}{{/if}}
+</div>

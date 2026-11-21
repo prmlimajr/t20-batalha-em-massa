@@ -128,3 +128,369 @@
 .t20bm-rodape button {
 	width: 100%;
 }
+
+/* ---------------- Configurador da batalha (T4) ---------------- */
+
+.t20bm-configurador .window-content {
+	padding: 0;
+}
+.t20bm-config {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	min-height: 0;
+}
+.t20bm-abas {
+	display: flex;
+	gap: 0.25rem;
+	padding: 0.5rem 0.75rem 0;
+	border-bottom: 1px solid var(--color-border, rgba(127, 127, 127, 0.4));
+	flex: none;
+}
+.t20bm-aba-botao {
+	width: auto;
+	border-radius: 6px 6px 0 0;
+	border-bottom: none;
+	opacity: 0.7;
+}
+.t20bm-aba-botao.ativa {
+	opacity: 1;
+	box-shadow: inset 0 -2px 0 var(--bm-ouro);
+}
+.t20bm-avisos {
+	list-style: none;
+	margin: 0.5rem 0.75rem 0;
+	padding: 0.4rem 0.6rem;
+	border: 1px solid var(--bm-ouro);
+	border-radius: 6px;
+	background: var(--bm-ouro-claro);
+	font-size: 0.85rem;
+	flex: none;
+}
+.t20bm-aba {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 0.75rem;
+}
+.t20bm-exercitos {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.75rem;
+	align-items: start;
+}
+@media (max-width: 700px) {
+	.t20bm-exercitos { grid-template-columns: 1fr; }
+}
+.t20bm-exercito {
+	border: 1px solid var(--bm-aliado-borda);
+	border-radius: var(--bm-raio);
+	padding: 0.6rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	min-width: 0;
+}
+.t20bm-exercito.inimigo {
+	border-color: var(--bm-inimigo-borda);
+}
+.t20bm-exercito h3,
+.t20bm-exercito h4 {
+	margin: 0.4rem 0 0;
+	border: none;
+}
+.t20bm-rotulo-lado {
+	font-size: 0.75rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--bm-aliado-rotulo);
+}
+.t20bm-exercito.inimigo .t20bm-rotulo-lado {
+	color: var(--bm-inimigo-rotulo);
+}
+.t20bm-total {
+	font-weight: normal;
+	opacity: 0.75;
+}
+.t20bm-slot,
+.t20bm-lista-retratos {
+	border: 1px dashed var(--color-border, rgba(127, 127, 127, 0.6));
+	border-radius: 8px;
+	padding: 0.4rem;
+	transition: background 0.15s;
+}
+.t20bm-slot {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: 3rem;
+}
+.t20bm-slot.sobre,
+.t20bm-lista-retratos.sobre {
+	background: var(--bm-ouro-claro);
+	border-color: var(--bm-ouro);
+}
+.t20bm-slot-info {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+}
+.t20bm-lista-retratos {
+	list-style: none;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+.t20bm-lista-retratos li {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+.t20bm-lista-retratos li .t20bm-nome,
+.t20bm-lista-retratos li input[type="text"] {
+	flex: 1;
+	min-width: 0;
+}
+.t20bm-soltar-aqui {
+	opacity: 0.6;
+	font-size: 0.8rem;
+	font-style: italic;
+}
+.t20bm-soltar-aqui button {
+	width: auto;
+	font-style: normal;
+}
+.t20bm-retrato {
+	width: 2.2rem;
+	height: 2.2rem;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 1px solid var(--color-border, rgba(127, 127, 127, 0.6));
+	flex: none;
+}
+.t20bm-retrato.grande {
+	width: 3.4rem;
+	height: 3.4rem;
+}
+.t20bm-retrato.quadrado {
+	border-radius: 6px;
+}
+.t20bm-retrato.vazio {
+	display: inline-block;
+	background: rgba(127, 127, 127, 0.2);
+}
+.t20bm-nome {
+	cursor: pointer;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.t20bm-alerta {
+	color: var(--color-level-error, #c0392b);
+	font-size: 0.75rem;
+}
+.t20bm-linha {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+.t20bm-linha select {
+	flex: 1;
+	min-width: 0;
+}
+.t20bm-linha > button {
+	width: auto;
+}
+.t20bm-guerra {
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+	margin-left: auto;
+}
+.t20bm-guerra input {
+	width: 4rem;
+}
+button.t20bm-icone {
+	width: 1.9rem;
+	height: 1.9rem;
+	flex: none;
+	padding: 0;
+	line-height: 1;
+}
+.t20bm-modificadores {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+.t20bm-modificadores li {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+.t20bm-mod-nome,
+.t20bm-modificadores li input[type="text"] {
+	flex: 1;
+	min-width: 0;
+}
+.t20bm-mod-valor {
+	width: 3.5rem;
+	flex: none;
+}
+.t20bm-valor {
+	font-weight: bold;
+}
+.t20bm-area {
+	border: 1px solid var(--color-border, rgba(127, 127, 127, 0.4));
+	border-radius: 8px;
+	margin-bottom: 0.5rem;
+}
+.t20bm-config .t20bm-rodape {
+	flex: none;
+	padding: 0.5rem 0.75rem;
+	border-top: 1px solid var(--color-border, rgba(127, 127, 127, 0.4));
+}
+.t20bm-config .t20bm-rodape .sem-alteracao {
+	opacity: 0.6;
+}
+
+/* ---------------- Tabela de inimigos (T5) ---------------- */
+
+.t20bm-dado {
+	margin: 0.25rem 0 0.5rem;
+}
+.t20bm-dado > span {
+	flex: 1;
+}
+.t20bm-inimigos {
+	list-style: none;
+	margin: 0;
+	padding: 0.4rem;
+	border: 1px dashed var(--color-border, rgba(127, 127, 127, 0.6));
+	border-radius: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+.t20bm-inimigos.sobre {
+	background: var(--bm-ouro-claro);
+	border-color: var(--bm-ouro);
+}
+.t20bm-inimigo {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.35rem;
+	border: 1px solid var(--color-border, rgba(127, 127, 127, 0.35));
+	border-radius: 6px;
+}
+.t20bm-face {
+	flex: none;
+	width: 2rem;
+	height: 2rem;
+	display: grid;
+	place-items: center;
+	border-radius: 6px;
+	background: var(--bm-ouro-claro);
+	border: 1px solid var(--bm-ouro);
+	font-weight: bold;
+}
+.t20bm-inimigo-info {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+}
+.t20bm-inimigo-stats,
+.t20bm-inimigo-ataques {
+	font-size: 0.8rem;
+	opacity: 0.8;
+}
+
+/* ---------------- Cartões de chat ---------------- */
+
+.t20bm-cartao header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+.t20bm-cartao h3 {
+	margin: 0;
+	border: none;
+}
+.t20bm-cartao-retrato {
+	width: 3rem;
+	height: 3rem;
+	border-radius: 50%;
+	object-fit: cover;
+	border: none;
+	flex: none;
+}
+.t20bm-cartao-rotulo {
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	opacity: 0.75;
+}
+.t20bm-cartao-stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem 0.75rem;
+	margin: 0.4rem 0;
+}
+.t20bm-cartao-stats div {
+	display: flex;
+	gap: 0.25rem;
+}
+.t20bm-cartao-stats dt {
+	font-weight: bold;
+}
+.t20bm-cartao-stats dd {
+	margin: 0;
+}
+.t20bm-cartao-ataques {
+	margin: 0.25rem 0 0;
+	padding-left: 1.1rem;
+}
+.t20bm-dano-medio {
+	font-size: 0.85em;
+	opacity: 0.85;
+}
+
+/* ---------------- Regras opcionais (T6) ---------------- */
+
+.t20bm-opcional {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.6rem;
+	padding: 0.5rem 0.6rem;
+	margin-bottom: 0.4rem;
+	border: 1px solid var(--color-border, rgba(127, 127, 127, 0.4));
+	border-radius: 8px;
+	cursor: pointer;
+}
+.t20bm-opcional.ativa {
+	border-color: var(--bm-ouro);
+	background: var(--bm-ouro-claro);
+}
+.t20bm-opcional.travada {
+	cursor: not-allowed;
+	opacity: 0.8;
+}
+.t20bm-opcional input {
+	flex: none;
+	margin-top: 0.2rem;
+}
+.t20bm-opcional-corpo {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+}
+.t20bm-opcional-texto {
+	font-size: 0.85rem;
+	opacity: 0.85;
+}

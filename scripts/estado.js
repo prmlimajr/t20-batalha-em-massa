@@ -32,7 +32,6 @@ export function estadoPadrao(nome = "") {
 		iniciada: false,
 		turno: 0,
 		etapa: "pre",
-		limiar: 10,
 		imagens: {
 			fundo: caminho("assets/fundo.png"),
 			campo: caminho("assets/campodebatalha.png")
@@ -77,6 +76,7 @@ export function completarEstado(salvo) {
 	// Listas com tamanho fixo: garantir 2 exércitos e 4 áreas mesmo se o salvo estiver incompleto.
 	estado.exercitos = [0, 1].map((i) => mesclar(padrao.exercitos[i], estado.exercitos?.[i] ?? {}));
 	estado.areas = padrao.areas.map((a, i) => ({ ...a, ...(estado.areas?.[i] ?? {}), posicao: a.posicao }));
+	delete estado.limiar; // v0 guardava o limiar; agora é sempre calculado (regras.limiarVitoria)
 	estado.v = VERSAO_ESTADO;
 	return estado;
 }

@@ -10,10 +10,10 @@ Spec e plano de tasks: `SDD/t20-batalha-em-massa/feature/spec.md`.
 
 - [x] T1 — Esqueleto do módulo
 - [x] T2 — Gerenciador de batalhas (falta testar no Foundry)
-- [ ] T3 — Modelo de dados e regras puras
-- [ ] T4 — Configurador do mestre
-- [ ] T5 — Tabela de inimigos
-- [ ] T6 — Regras opcionais
+- [x] T3 — Modelo de dados e regras puras
+- [x] T4 — Configurador do mestre (falta testar no Foundry)
+- [x] T5 — Tabela de inimigos (falta testar no Foundry)
+- [x] T6 — Regras opcionais (falta testar no Foundry)
 - [ ] T7 — Modal da batalha
 - [ ] T8 — Condução das etapas
 - [ ] T9 — Posicionamento
@@ -25,3 +25,14 @@ Spec e plano de tasks: `SDD/t20-batalha-em-massa/feature/spec.md`.
 ## Instalação
 
 Copie (ou crie um link simbólico de) esta pasta em `Data/modules/t20-batalha-em-massa` e ative o módulo num mundo Tormenta20.
+
+## Testes
+
+Regras e estado são funções puras, testadas em Node (sem Foundry):
+
+```sh
+node testes/regras.test.mjs
+node testes/estado.test.mjs
+node testes/configuracao.test.mjs
+node testes/inimigos.test.mjs
+```
