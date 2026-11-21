@@ -325,18 +325,23 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 }
 
 /**
- * Largura ocupada pela barra lateral à direita (chat, atores...), medida na tela.
+ * Largura ocupada pela barra lateral à direita, medida pelas partes visíveis dela (abas e conteúdo).
+ * Não usa #ui-right: no v14 ele inclui uma coluna transparente (notificações) mais larga que a barra.
  * Sem barra visível, 0: a camada cobre a tela toda.
  */
+const SELETORES_BARRA = ["#sidebar-tabs", "#sidebar-content", "#sidebar > nav", "#sidebar .sidebar-tab.active", "#sidebar"];
+
 function larguraDaBarraLateral() {
-	let largura = 0;
-	for (const el of document.querySelectorAll("#sidebar, #ui-right")) {
+	let esquerda = window.innerWidth;
+	for (const el of document.querySelectorAll(SELETORES_BARRA.join(","))) {
 		const r = el.getBoundingClientRect();
-		if (r.width > 0 && r.height > 0 && r.left > window.innerWidth / 2) {
-			largura = Math.max(largura, Math.ceil(window.innerWidth - r.left));
+		const visivel = r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== "hidden";
+		// Só o que está do lado direito da tela (as abas ficam à esquerda do conteúdo, sem encostar na borda).
+		if (visivel && r.left > window.innerWidth / 2 && r.right > window.innerWidth * 0.8) {
+			esquerda = Math.min(esquerda, r.left);
 		}
 	}
-	return largura;
+	return Math.max(0, Math.ceil(window.innerWidth - esquerda));
 }
 
 /* ---------------- Pedido de movimento (executado pelo mestre ativo) ---------------- */
