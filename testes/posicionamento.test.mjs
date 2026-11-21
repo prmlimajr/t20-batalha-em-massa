@@ -32,7 +32,8 @@ assert.equal(motivo(validarMovimento(e, "h2", 3, jogador)), "JaMoveu");
 
 // Mestre: qualquer área, a qualquer momento, sem gastar o movimento da rodada
 const gm = { ehGM: true };
-assert.equal(motivo(validarMovimento(base({ etapa: "evento" }), "h1", 3, gm)), "ok");
+assert.equal(motivo(validarMovimento(base({ etapa: "evento" }), "h1", 3, gm)), "ok", "mestre: qualquer área, fora da etapa");
+assert.equal(motivo(validarMovimento(moverHeroi(base(), "h1", 2, { ehGM: false }), "h1", 0, gm)), "ok", "mestre: mesmo depois do movimento da rodada");
 const peloMestre = moverHeroi(base(), "h2", 3, gm);
 assert.equal(peloMestre.grupoArea, 3);
 assert.deepEqual(peloMestre.rodada.movidos, []);

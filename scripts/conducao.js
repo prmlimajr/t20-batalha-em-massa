@@ -48,6 +48,7 @@ export const etapaAtual = (salvo) => completarEstado(salvo).etapa;
  */
 export function avancarEtapa(salvo) {
 	const e = completarEstado(salvo);
+	if (e.fim) return { estado: e, entrou: e.etapa, novoTurno: false }; // batalha encerrada: nada avança
 	const prox = proximaEtapa(e.etapa, e.turno);
 	if (e.etapa === ETAPA_PRE) e.iniciada = true;
 	e.etapa = prox.etapa;
@@ -59,13 +60,47 @@ export function avancarEtapa(salvo) {
 /** Volta uma etapa dentro do turno (não volta para antes da Preparação nem para a pré-batalha). */
 export function voltarEtapa(salvo) {
 	const e = completarEstado(salvo);
+	if (e.fim) return { estado: e, mudou: false };
 	const ant = etapaAnterior(e.etapa, e.turno);
 	const mudou = ant.etapa !== e.etapa;
 	e.etapa = ant.etapa;
 	return { estado: e, mudou };
 }
 
+/* ---------------- Preparação: jogadores prontos ---------------- */
+
+/** Marca (ou desmarca) que um jogador concluiu a Preparação. */
+export function marcarPronto(salvo, userId, pronto = true) {
+	const e = completarEstado(salvo);
+	const atuais = new Set(e.rodada.prontos);
+	if (pronto) atuais.add(userId);
+	else atuais.delete(userId);
+	e.rodada.prontos = [...atuais];
+	return e;
+}
+
+/** Todos os jogadores obrigatórios marcaram? (Sem obrigatórios, nunca avança sozinho.) */
+export function todosProntos(salvo, obrigatorios) {
+	const prontos = new Set(completarEstado(salvo).rodada.prontos);
+	return obrigatorios.length > 0 && obrigatorios.every((id) => prontos.has(id));
+}
+
+/* ---------------- Evento: sorteios por área ---------------- */
+
+export function registrarEvento(salvo, area, evento) {
+	const e = completarEstado(salvo);
+	e.rodada.eventos = { ...e.rodada.eventos, [area]: evento };
+	return e;
+}
+
+export function registrarInimigo(salvo, area, inimigo) {
+	const e = completarEstado(salvo);
+	e.rodada.inimigos = { ...e.rodada.inimigos, [area]: inimigo };
+	return e;
+}
+
 export const podeVoltar = (salvo) => {
+	if (completarEstado(salvo).fim) return false;
 	const etapa = completarEstado(salvo).etapa;
 	return ETAPAS.findIndex((x) => x.chave === etapa) > 0;
 };

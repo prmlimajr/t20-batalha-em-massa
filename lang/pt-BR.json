@@ -108,7 +108,8 @@
 			"Cartao": "Inimigo",
 			"Contra": "contra {heroi}",
 			"DanoMedio": "{nome}: dano médio {medio}, crítico {critico}",
-			"TabelaVazia": "A tabela de inimigos está vazia. Cadastre os inimigos no configurador da batalha (aba Inimigos)."
+			"TabelaVazia": "A tabela de inimigos está vazia. Cadastre os inimigos no configurador da batalha (aba Inimigos).",
+			"NaArea": "em {area}"
 		},
 		"Opcionais": {
 			"Dica": "Regras opcionais do Apêndice B, por batalha. Lobos solitários define se o grupo anda junto e não pode mudar depois que a batalha começa (para mudar, reinicie a batalha no gerenciador).",
@@ -134,7 +135,7 @@
 				},
 				"preparacao": {
 					"Titulo": "Os heróis se preparam.",
-					"Texto": "Cada herói tem o equivalente a uma rodada de combate para usar habilidades e ativar itens."
+					"Texto": "Cada herói tem o equivalente a uma rodada de combate para usar habilidades e ativar itens. Quando todos concluírem, a batalha segue."
 				},
 				"posicionamento": {
 					"Titulo": "Escolham sua posição.",
@@ -158,7 +159,8 @@
 			"Voltar": "Voltar etapa",
 			"TerrenoDica": "Teste oposto de Sobrevivência dos generais: o vencedor recebe Terreno favorável (+2). Rolar de novo substitui o resultado.",
 			"MotivacaoDica": "Atuação de cada general contra CD 20: motivadas (+1, +1 a cada 5 acima) ou desmotivadas (−2, falha por 5 ou mais). Rolar de novo substitui o resultado.",
-			"Falha": "Algo deu errado ao conduzir a batalha. Veja o console (F12)."
+			"Falha": "Algo deu errado ao conduzir a batalha. Veja o console (F12).",
+			"Abertura": "A batalha começa"
 		},
 		"Teste": {
 			"Terreno": "Terreno",
@@ -192,8 +194,89 @@
 				"NaoDono": "Você só pode mover o seu herói.",
 				"ForaDaEtapa": "Só é possível mover na etapa de Posicionamento.",
 				"JaMoveu": "O movimento deste turno já foi feito.",
-				"UmaArea": "Só é possível avançar ou recuar uma área por turno."
+				"UmaArea": "Só é possível avançar ou recuar uma área por turno.",
+				"Encerrada": "A batalha já terminou."
 			}
+		},
+		"Preparacao": {
+			"Prontos": "Prontos: {quantos} de {total}",
+			"Concluir": "Concluí minha preparação",
+			"Desfazer": "Desfazer"
+		},
+		"Evento": {
+			"Cartao": "Evento",
+			"SortearInimigo": "Sortear o tipo de inimigo desta área",
+			"SortearEvento": "Sortear o evento desta área (1d20 + posição)",
+			"Teste": "Teste de {pericias} (CD {cd}): +2 no teste de Guerra se passar.",
+			"DanoPorBonus": "+1 no teste de Guerra a cada {dano} de dano.",
+			"Resolucao": "Resolução do evento",
+			"BonusTotal": "Bônus de Guerra do evento:",
+			"BonusDaArea": "Bônus de Guerra desta área",
+			"Dano": "Dano",
+			"DanoLider": "Dano no líder (×2)",
+			"DanoOficial": "Dano do oficial (−)",
+			"TestePassou": "Passou no teste de perícia (+2)",
+			"BonusManual": "Bônus (ações abertas)",
+			"SeguraEstandarte": "Segura um estandarte: +2 no teste do general; vira alvo (+5 nos ataques e na CD contra ele)",
+			"GeneralDerrotado": "General derrotado",
+			"GeneralDerrotadoNota": "General inimigo derrotado: +{pontos} pontos de vitória; o novo general tem −{penalidade} em Guerra.",
+			"CombateNormal": "Resolvido com as regras normais de combate.",
+			"Ajuste": "Posicionamento avançado: ajuste na rolagem do evento",
+			"Oficial": "Um oficial",
+			"GanhaPontos": "{exercito} ganha {pontos} pontos de vitória.",
+			"NovoGeneral": "{nome} assume o exército inimigo com Guerra {guerra} (−{penalidade})."
+		},
+		"Generais": {
+			"Cartao": "Teste dos Generais",
+			"RoladoPor": "rolado por {nome}",
+			"Mestre": "o mestre",
+			"Composicao": "Bônus do general nesta rodada",
+			"Total": "Bônus total",
+			"Rolar": "Rolar pelo general (1d20 {bonus})",
+			"Aguardando": "Aguardando a rolagem de {nome}.",
+			"Vencedor": "Venceu a rodada",
+			"Empate": "Empate!",
+			"RolemDeNovo": "Mesmo total e mesmo bônus: os generais rolam de novo.",
+			"VenceRodada": "{exercito} vence a rodada",
+			"VenceRodadaFrase": "{exercito} vence a rodada e marca {pontos} pontos.",
+			"MarcaPonto": "+{pontos} ponto de vitória",
+			"MarcaPontos": "+{pontos} pontos de vitória",
+			"DesempateBonus": "Empate no total: venceu o maior bônus.",
+			"Fuga": "{exercito} começa a fugir: se não reduzir a diferença para menos de 5 na próxima rodada, a batalha termina.",
+			"FugaInterrompida": "A fuga foi interrompida: a batalha continua.",
+			"Proximo": "O mestre avança para o próximo turno.",
+			"Fim": {
+				"destruicao": "{exercito} vence a batalha: o exército adversário foi aniquilado.",
+				"fuga": "{exercito} vence a batalha: o exército adversário fugiu."
+			}
+		},
+		"Fim": {
+			"Resultado": "Fim da batalha",
+			"VenceBatalha": "{exercito} vence a batalha",
+			"Tipo": {
+				"destruicao": "O exército adversário foi aniquilado.",
+				"fuga": "O exército adversário fugiu do campo de batalha.",
+				"desistencia": "O general adversário desistiu do confronto."
+			},
+			"UmTurno": "1 turno",
+			"Turnos": "{n} turnos",
+			"Baixas": "Baixas",
+			"BaixasTexto": "{percentual}% das tropas ({feridos}% feridos, {mortos}% mortos)",
+			"Herois": "Os heróis",
+			"Recompensa": "Espólios: cada personagem recebe tesouro equivalente a ND {nd}. Experiência: ND {nd} (se a campanha usar XP).",
+			"SemND": "Espólios e experiência equivalem ao ND médio do exército inimigo; cadastre inimigos com ND na tabela para calcular.",
+			"DerrotaHerois": "Cada herói num exército que fugiu ou foi destruído deve defender-se contra dois inimigos. Se sobreviver, escapa; caso contrário, é preso ou morto, conforme o mestre.",
+			"Historico": "Histórico dos turnos",
+			"Turno": "Turno",
+			"Rolagens": "Generais",
+			"Vencedor": "Vencedor",
+			"Pontos": "Pontos",
+			"Placar": "Placar",
+			"ReiniciarConfirma": "Reiniciar a batalha? A configuração fica; placar, turno, posições e histórico voltam ao início.",
+			"Declarar": "Declarar vencedor",
+			"DeclararDica": "Encerrar a batalha: um dos generais desistiu do confronto",
+			"DeclararTexto": "Um dos generais desistiu do confronto. Qual exército vence a batalha?",
+			"Cancelar": "Cancelar"
 		}
 	}
 }

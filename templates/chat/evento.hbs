@@ -1,0 +1,14 @@
+<div class="t20bm-cartao t20bm-cartao-evento">
+	<div class="t20bm-cartao-titulo">
+		<span class="t20bm-cartao-rotulo">{{localize "T20BM.Evento.Cartao"}} · {{area}} ({{posicao}})</span>
+		<span class="t20bm-cartao-nome">{{nome}}</span>
+		<span class="t20bm-cartao-rotulo">1d20 {{mod}} = {{d20}} {{mod}} = {{total}}</span>
+	</div>
+	<p class="t20bm-evento-texto">{{texto}}</p>
+	<div class="t20bm-evento-mecanica">
+		<strong>{{mecanica}}</strong>
+		{{#if pericias}}<span>{{localize "T20BM.Evento.Teste" pericias=pericias cd=cd}}</span>{{/if}}
+		{{#if combate}}<span>{{localize "T20BM.Evento.DanoPorBonus" dano=danoPorBonus}}</span>{{/if}}
+		<p>{{mecanicaTexto}}</p>
+	</div>
+</div>

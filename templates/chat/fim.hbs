@@ -1,0 +1,11 @@
+<div class="t20bm-cartao t20bm-cartao-fim">
+	<div class="t20bm-cartao-titulo">
+		<span class="t20bm-cartao-rotulo">{{localize "T20BM.Fim.Resultado"}} · {{turnosTxt}}</span>
+		<span class="t20bm-cartao-nome">{{titulo}}</span>
+		<span class="t20bm-cartao-rotulo">{{tipoTxt}} · {{localize "T20BM.Fim.Placar"}} {{placarTxt}}</span>
+	</div>
+	<p class="t20bm-teste-texto"><strong>{{localize "T20BM.Fim.Baixas"}}</strong></p>
+	<ul class="t20bm-cartao-ataques">{{#each baixas}}<li><b>{{exercito}}</b>: {{texto}}</li>{{/each}}</ul>
+	{{#if recompensa}}<p class="t20bm-teste-resultado">{{recompensa}}</p>{{/if}}
+	{{#if derrotaHerois}}<p class="t20bm-teste-nota">{{derrotaHerois}}</p>{{/if}}
+</div>

@@ -3,8 +3,8 @@
  * T5: sorteio de inimigo. T8: testes de pré-batalha e lembretes. (T10/T11 acrescentam evento e generais.)
  */
 import { MODULE_ID, L, caminho } from "./modulo.js";
-import { formulaInimigos, inimigoDaFace, vencedorOposto, motivacao } from "./regras.js";
-import { CD_MOTIVACAO, TEXTO_PREPARACAO } from "./constantes.js";
+import { formulaInimigos, inimigoDaFace, vencedorOposto, motivacao, modPosicao, eventoPorTotal, cdDaBatalha } from "./regras.js";
+import { CD_MOTIVACAO, TEXTO_PREPARACAO, POSICOES, MECANICAS, TAMANHOS, PONTOS_DERROTAR_GENERAL, PENALIDADE_NOVO_GENERAL } from "./constantes.js";
 import { retratoVivo } from "./retratos.js";
 import { resumoInimigo, comSinal } from "./inimigos.js";
 
@@ -48,9 +48,10 @@ export async function dadosInimigo(entrada, face) {
  * @param {object} [opcoes]
  * @param {boolean} [opcoes.sussurrarMestre]  só o mestre vê (teste no configurador)
  * @param {string} [opcoes.heroi]             nome do herói que enfrenta o inimigo (T10)
+ * @param {string} [opcoes.area]              nome da área do campo de batalha
  * @param {boolean} [opcoes.danoMedio]        regra opcional Dano médio: mostra médias no cartão
  */
-export async function rolarInimigo(tabela, { sussurrarMestre = false, heroi = null, danoMedio = false } = {}) {
+export async function rolarInimigo(tabela, { sussurrarMestre = false, heroi = null, area = null, danoMedio = false } = {}) {
 	const formula = formulaInimigos(tabela);
 	if (!formula) {
 		ui.notifications.warn(L("Inimigos.TabelaVazia"));
@@ -63,7 +64,7 @@ export async function rolarInimigo(tabela, { sussurrarMestre = false, heroi = nu
 	// Link enriquecido pelo chat do Foundry; colchetes/chaves no nome quebrariam a sintaxe.
 	const nomeLimpo = dados.nome.replace(/[[\]{}]/g, "");
 	const link = dados.uuid && !dados.atorSumiu ? `@UUID[${dados.uuid}]{${nomeLimpo}}` : dados.nome;
-	const content = await renderizar("inimigo.hbs", { ...dados, link, formula, heroi, danoMedio });
+	const content = await renderizar("inimigo.hbs", { ...dados, link, formula, heroi, area, danoMedio });
 	const mensagem = {
 		speaker: ChatMessage.getSpeaker({ alias: L("Titulo") }),
 		content,
@@ -72,7 +73,7 @@ export async function rolarInimigo(tabela, { sussurrarMestre = false, heroi = nu
 	};
 	if (sussurrarMestre) mensagem.whisper = ChatMessage.getWhisperRecipients("GM").map((u) => u.id);
 	await ChatMessage.create(mensagem);
-	return { face, entrada, roll };
+	return { face, entrada, dados, roll };
 }
 
 /* =====================================================================
@@ -192,4 +193,114 @@ export async function lembretePreparacao(turno) {
 		titulo: L("Teste.PreparacaoTitulo", { n: turno }),
 		texto: TEXTO_PREPARACAO
 	}, []);
+}
+
+/* =====================================================================
+   T10 — Evento de uma área (Tabela B-5): 1d20 + modificador da posição
+   ===================================================================== */
+
+/**
+ * Sorteia o evento de uma área do campo de batalha e manda o cartão para o chat.
+ * @param {object} estado   batalha
+ * @param {number} area     índice da área (0–3)
+ * @returns {Promise<{ total: number, d20: number, chave: string, nome: string }>}
+ */
+export async function rolarEvento(estado, area, { ajuste = 0 } = {}) {
+	const mod = modPosicao(area) + ajuste;
+	const roll = await new Roll("1d20 + @mod", { mod }).evaluate();
+	const d20 = roll.dice[0]?.total ?? roll.total - mod;
+	const evento = eventoPorTotal(roll.total);
+	const mecanica = MECANICAS[evento.mecanica];
+	const tamanho = TAMANHOS[estado.tamanho] ?? TAMANHOS.media;
+	const pericias = (evento.pericias ?? []).map(nomePericia);
+	const content = await renderizar("evento.hbs", {
+		area: estado.areas[area]?.nome || POSICOES[area].nome,
+		posicao: POSICOES[area].nome,
+		mod: comSinal(mod),
+		d20,
+		total: roll.total,
+		nome: evento.nome,
+		texto: evento.texto,
+		mecanica: mecanica?.nome,
+		mecanicaTexto: mecanica?.texto,
+		pericias: pericias.join(", "),
+		cd: pericias.length ? cdDaBatalha(estado.tamanho) : null,
+		combate: !!mecanica?.combate,
+		danoPorBonus: tamanho.dano
+	});
+	await ChatMessage.create({
+		speaker: ChatMessage.getSpeaker({ alias: L("Titulo") }),
+		content,
+		rolls: [roll],
+		flags: { [MODULE_ID]: { tipo: "evento", area, chave: evento.chave } }
+	});
+	return { total: roll.total, d20, chave: evento.chave, nome: evento.nome };
+}
+
+/** Enfrentar general: o grupo derrotou o general inimigo → 1d4+1 pontos de vitória e −(1d6+1) na Guerra do novo. */
+export async function rolarDerrotaGeneral(estado) {
+	const [pontos, penalidade] = await Promise.all([
+		new Roll(PONTOS_DERROTAR_GENERAL).evaluate(),
+		new Roll(PENALIDADE_NOVO_GENERAL).evaluate()
+	]);
+	const inimigo = estado.exercitos[1];
+	const anterior = Number(inimigo.general?.guerra) || 0;
+	const novo = inimigo.substituto?.nome || retratoVivo(inimigo.substituto).nome || L("Evento.Oficial");
+	await enviarCartao({
+		tipo: "generalDerrotado",
+		titulo: L("Evento.GeneralDerrotado"),
+		subtitulo: inimigo.general?.nome || retratoVivo(inimigo.general).nome,
+		resultado: L("Evento.GanhaPontos", { exercito: estado.exercitos[0].nome, pontos: pontos.total }),
+		notas: [L("Evento.NovoGeneral", { nome: novo, guerra: comSinal(anterior - penalidade.total), penalidade: penalidade.total })]
+	}, [pontos, penalidade]);
+	return { pontos: pontos.total, penalidade: penalidade.total };
+}
+
+/* =====================================================================
+   T11 — Teste dos Generais: 1d20 + bônus discriminado
+   ===================================================================== */
+
+/**
+ * Rola pelo general de um exército e manda o cartão para o chat (com os itens do bônus).
+ * @param {object} estado
+ * @param {0|1} lado
+ * @param {{ itens: {valor:number, texto:string}[], total: number }} composicao  (generais.composicaoBonus)
+ * @returns {Promise<number>} o resultado do d20
+ */
+export async function rolarGeneral(estado, lado, composicao) {
+	const roll = await new Roll("1d20 + @bonus", { bonus: composicao.total }).evaluate();
+	const d20 = roll.dice[0]?.total ?? roll.total - composicao.total;
+	await enviarCartao({
+		tipo: "general",
+		titulo: L("Generais.Cartao"),
+		subtitulo: game.user.isGM ? "" : L("Generais.RoladoPor", { nome: game.user.name }),
+		linhas: [{
+			...ladoDoCartao(estado, lado),
+			d20,
+			bonusTxt: comSinal(composicao.total),
+			total: roll.total
+		}],
+		notas: composicao.itens.map((i) => `${comSinal(i.valor)} ${i.texto}`)
+	}, [roll]);
+	return d20;
+}
+
+/* =====================================================================
+   T12 — Fim da batalha
+   ===================================================================== */
+
+/** NDs dos inimigos da tabela (para espólios e XP). Atores de compêndio são carregados. */
+export async function ndsDaTabela(estado) {
+	const atores = await Promise.all((estado.tabelaInimigos ?? []).map(carregarInimigo));
+	return atores.map((a) => a?.system?.attributes?.nd ?? a?.system?.detalhes?.nd).filter((nd) => nd !== undefined && nd !== null && nd !== "");
+}
+
+/** Resumo do fim da batalha no chat (dados de fim.resumoFim, já formatados pelo modal). */
+export async function enviarResumoFim(dados) {
+	const content = await renderizar("fim.hbs", dados);
+	await ChatMessage.create({
+		speaker: ChatMessage.getSpeaker({ alias: L("Titulo") }),
+		content,
+		flags: { [MODULE_ID]: { tipo: "fim" } }
+	});
 }

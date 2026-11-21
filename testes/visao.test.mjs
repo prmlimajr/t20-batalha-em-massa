@@ -79,3 +79,22 @@ assert.deepEqual(etapasDoTurno("generais").map((e) => e.feita), [true, true, tru
 assert.equal(areaDoHeroi(completarEstado({ grupoArea: 2 }), { area: 0 }), 2);
 
 console.log("visao: ok");
+
+/* Resolução dos eventos no tabuleiro (T10) */
+const comEventos = visaoBatalha({
+	tamanho: "escaramuca", etapa: "evento", grupoArea: 2,
+	opcionais: { posicionamentoAvancado: true },
+	herois: [{ uuid: "h1", nome: "H1", estandarte: true }],
+	rodada: { eventos: { 2: { chave: "interceptarOrdens", nome: "Interceptar ordens", dano: 40, teste: true } }, ajustes: { 2: -2 } }
+});
+assert.equal(comEventos.resolucoes.length, 1);
+assert.deepEqual([comEventos.resolucoes[0].bonus, comEventos.resolucoes[0].bonusTxt], [4, "+4"]);
+assert.equal(comEventos.resolucoes[0].mecanica, "Atacar e teste de perícia");
+assert.deepEqual([comEventos.resolucoes[0].campos.dano, comEventos.resolucoes[0].campos.teste], [true, true]);
+assert.equal(comEventos.bonusEvento, 4);
+assert.equal(comEventos.areas[2].bonusTxt, "+4");
+assert.equal(comEventos.areas[2].ajuste, -2);
+assert.equal(comEventos.areas[2].herois[0].estandarte, true);
+assert.equal(comEventos.areas[1].bonusTxt, "", "área sem evento: sem bônus");
+assert.equal(visaoBatalha({}).resolucoes.length, 0);
+console.log("visao (resolução): ok");

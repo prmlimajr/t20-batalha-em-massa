@@ -52,3 +52,26 @@ assert.deepEqual([v.mudou, v.estado.etapa, v.estado.turno], [true, "posicionamen
 assert.equal(podeVoltar(estadoPadrao()), false, "pré-batalha não volta");
 
 console.log("conducao: ok");
+
+/* Preparação: prontos */
+import { marcarPronto, todosProntos, registrarEvento, registrarInimigo } from "../scripts/conducao.js";
+let p = completarEstado({ etapa: "preparacao" });
+p = marcarPronto(p, "u1");
+p = marcarPronto(p, "u1");
+assert.deepEqual(p.rodada.prontos, ["u1"], "sem repetir");
+assert.equal(todosProntos(p, ["u1", "u2"]), false);
+p = marcarPronto(p, "u2");
+assert.equal(todosProntos(p, ["u1", "u2"]), true);
+assert.equal(todosProntos(p, []), false, "sem obrigatórios não avança sozinho");
+p = marcarPronto(p, "u1", false);
+assert.deepEqual(p.rodada.prontos, ["u2"]);
+assert.deepEqual(avancarEtapa(completarEstado({ ...p, etapa: "generais" })).estado.rodada.prontos, [], "zera no turno seguinte");
+
+/* Evento: sorteios por área */
+let ev = registrarEvento(completarEstado({}), 2, { total: 17, chave: "interceptarOrdens", nome: "Interceptar ordens" });
+ev = registrarInimigo(ev, 2, { face: 3, uuid: "Actor.o", nome: "Orc", img: "o.png" });
+ev = registrarEvento(ev, 1, { total: 9, chave: "manterPosicao", nome: "Manter posição" });
+assert.deepEqual(Object.keys(ev.rodada.eventos).sort(), ["1", "2"]);
+assert.equal(ev.rodada.inimigos[2].nome, "Orc");
+assert.equal("evento" in completarEstado({ rodada: { evento: { x: 1 } } }).rodada, false, "campo antigo removido");
+console.log("prontos e sorteios: ok");

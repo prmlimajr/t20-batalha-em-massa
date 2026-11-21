@@ -6,7 +6,7 @@
  * - Grupo junto (padrão): qualquer jogador com herói na batalha move; o primeiro movimento leva o grupo inteiro
  *   e encerra o movimento do grupo na rodada.
  * - Lobos solitários: cada herói se move sozinho, uma vez por rodada.
- * - Mestre: move qualquer herói para qualquer área, a qualquer momento (não conta como o movimento da rodada).
+ * - Mestre: move qualquer herói para qualquer área, a qualquer momento; não conta como o movimento da rodada.
  */
 import { completarEstado } from "./estado.js";
 import { movimentoValido } from "./regras.js";
@@ -43,6 +43,7 @@ export function validarMovimento(salvo, uuid, para, { ehGM, dono = false }) {
 	if (de === null) return { ok: false, motivo: "NaoEsta" };
 	if (!Number.isInteger(para) || para < 0 || para >= POSICOES.length) return { ok: false, motivo: "AreaInvalida" };
 	if (para === de) return { ok: false, motivo: "MesmaArea" };
+	if (e.fim) return { ok: false, motivo: "Encerrada" };
 	if (ehGM) return { ok: true };
 	if (!dono) return { ok: false, motivo: "NaoDono" };
 	if (e.etapa !== "posicionamento") return { ok: false, motivo: "ForaDaEtapa" };

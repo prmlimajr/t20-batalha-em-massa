@@ -10,16 +10,26 @@
  *   (fichas, chat destacado, diálogos) aparece por cima do modal: os jogadores sempre veem o chat e a ficha.
  */
 import { L, caminho } from "../modulo.js";
-import { lerBatalha, gravarBatalha, idExibida, exibirParaTodos, encerrarExibicao } from "../armazenamento.js";
-import { aplicarTerreno, aplicarMotivacao, avancarEtapa, voltarEtapa, podeVoltar } from "../conducao.js";
-import { rolarTesteOposto, rolarMotivacao, lembretePreparacao } from "../rolagens.js";
+import { lerBatalha, gravarBatalha, idExibida, exibirParaTodos, encerrarExibicao, reiniciar } from "../armazenamento.js";
+import { resumoFim, declararVencedor } from "../fim.js";
+import {
+	aplicarTerreno, aplicarMotivacao, avancarEtapa, voltarEtapa, podeVoltar,
+	marcarPronto, todosProntos, registrarEvento, registrarInimigo
+} from "../conducao.js";
+import {
+	rolarTesteOposto, rolarMotivacao, lembretePreparacao, rolarEvento, rolarInimigo, rolarDerrotaGeneral, rolarGeneral,
+	ndsDaTabela, enviarResumoFim
+} from "../rolagens.js";
+import { composicaoBonus, podeRolar, registrarRolagem, sortearJogador, definirQuemRola } from "../generais.js";
+import { atualizarResolucao, alternarEstandarte, derrotarGeneralInimigo, definirAjuste } from "../evento.js";
+import { animarAbertura } from "../abertura.js";
 import { validarMovimento, moverHeroi, opcoesDeMovimento, jaMoveu } from "../posicionamento.js";
 import { pedirAoMestre, registrarTratador } from "../socket.js";
 import { visaoBatalha } from "../visao.js";
 import { retratoVivo } from "../retratos.js";
 import { ConfiguradorBatalha } from "./configurador.js";
 
-const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 
 const INTERVALO_CARROSSEL = 5000;
 
@@ -63,6 +73,7 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 		this.local = false;
 		this.timers = [];
 		this.ocupado = false;
+		this.abrindo = true; // animação de abertura no primeiro render
 		this.aoRedimensionar = foundry.utils.debounce(() => this.#ajustarAreaLivre(), 100);
 	}
 
@@ -81,7 +92,15 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 			motivacao: ModalBatalha.#motivacao,
 			avancar: ModalBatalha.#avancar,
 			voltar: ModalBatalha.#voltar,
-			mover: ModalBatalha.#moverPorBotao
+			mover: ModalBatalha.#moverPorBotao,
+			pronto: ModalBatalha.#pronto,
+			sortearInimigo: ModalBatalha.#sortearInimigo,
+			sortearEvento: ModalBatalha.#sortearEvento,
+			estandarte: ModalBatalha.#estandarte,
+			generalDerrotado: ModalBatalha.#generalDerrotado,
+			rolarGeneral: ModalBatalha.#rolarGeneral,
+			reiniciarBatalha: ModalBatalha.#reiniciarBatalha,
+			declararVencedor: ModalBatalha.#declararVencedor
 		}
 	};
 
@@ -119,6 +138,8 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 			jaMoveu: posicionando && !gm && !v.lobosSolitarios && jaMoveu(salvo, salvo.herois[0]?.uuid),
 			lobos: v.lobosSolitarios
 		};
+		const generais = dadosGenerais(salvo, v, gm);
+		const fim = salvo.fim ? formatarFim(resumoFim(salvo, { nds: await ndsDaTabela(salvo) })) : null;
 		const dadosMensagem = { area: v.mensagem.area };
 		const chaveMensagem = v.mensagem.etapa === "posicionamento" && v.lobosSolitarios ? "posicionamentoLobos" : v.mensagem.etapa;
 		const exibida = idExibida() === this.idBatalha;
@@ -128,9 +149,18 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 			previa: this.local && !exibida,
 			exibida,
 			rotuloTurno: v.pre ? L("Modal.PreBatalha") : L("Modal.Turno", { n: v.turno }),
-			mensagemTitulo: L(`Modal.Mensagens.${chaveMensagem}.Titulo`, dadosMensagem),
-			mensagemTexto: L(`Modal.Mensagens.${chaveMensagem}.Texto`, dadosMensagem),
+			mensagemTitulo: generais?.mensagemTitulo ?? L(`Modal.Mensagens.${chaveMensagem}.Titulo`, dadosMensagem),
+			mensagemTexto: generais?.mensagemTexto ?? L(`Modal.Mensagens.${chaveMensagem}.Texto`, dadosMensagem),
+			faseGenerais: !!generais,
+			fim,
+			podeDeclarar: gm && salvo.iniciada && !salvo.fim,
+			rolagemDoJogador: this.rolandoLocal,
 			podeVoltar: podeVoltar(salvo),
+			preparacao: dadosPreparacao(salvo, v.etapa),
+			sorteiosDoMestre: gm && v.etapa === "evento",
+			editaResolucao: gm && v.etapa === "evento",
+			mostrarResolucao: (v.etapa === "evento" || v.etapa === "generais") && v.resolucoes.length > 0,
+			bonusEventoTxt: v.bonusEvento > 0 ? `+${v.bonusEvento}` : String(v.bonusEvento),
 			movimento,
 			ocupado: this.ocupado,
 			estiloFundo: v.imagens.fundo ? `background-image: url('${v.imagens.fundo}')` : "",
@@ -151,6 +181,14 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 		super._onRender(context, options);
 		this.#ajustarAreaLivre();
 		this.#ligarArrastar();
+		this.#ligarResolucao();
+		this.#anunciarResultado(lerBatalha(this.idBatalha));
+		if (this.abrindo) {
+			this.abrindo = false;
+			const alvo = this.element.querySelector(".t20bm-tabuleiro");
+			// Espera o layout assentar (largura/altura finais) antes de medir o tabuleiro.
+			requestAnimationFrame(() => animarAbertura({ container: this.element, alvo, texto: L("Modal.Abertura") }));
+		}
 		this.#pararCarrosseis();
 		for (const carrossel of this.element.querySelectorAll(".t20bm-carrossel")) {
 			const itens = [...carrossel.querySelectorAll(".t20bm-carrossel-item")];
@@ -210,6 +248,159 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 				this.#mover(uuid, indice);
 			});
 		}
+	}
+
+	/* ---------------- Preparação: "concluí" ---------------- */
+
+	static async #pronto(_ev, alvo) {
+		const pronto = alvo.dataset.pronto === "true";
+		if (!game.users.activeGM) return this.avisar(L("Socket.SemMestre"));
+		await pedirAoMestre("pronto", { idBatalha: this.idBatalha, pronto });
+	}
+
+	/* ---------------- Evento: sorteios do mestre por área ---------------- */
+
+	static #sortearInimigo(_ev, alvo) {
+		const area = Number(alvo.dataset.area);
+		return this.#conduzir(async (estado) => {
+			const r = await rolarInimigo(estado.tabelaInimigos, {
+				area: estado.areas[area]?.nome, danoMedio: estado.opcionais.danoMedio
+			});
+			if (!r) return;
+			const inimigo = { face: r.face, uuid: r.dados.uuid, nome: r.dados.nome, img: r.dados.img };
+			await gravarBatalha(this.idBatalha, registrarInimigo(lerBatalha(this.idBatalha), area, inimigo));
+		});
+	}
+
+	static #sortearEvento(_ev, alvo) {
+		const area = Number(alvo.dataset.area);
+		return this.#conduzir(async (estado) => {
+			const ajuste = estado.opcionais.posicionamentoAvancado ? (estado.rodada.ajustes?.[area] ?? 0) : 0;
+			const evento = await rolarEvento(estado, area, { ajuste });
+			await gravarBatalha(this.idBatalha, registrarEvento(lerBatalha(this.idBatalha), area, evento));
+		});
+	}
+
+	/* ---------------- Evento: resolução (mestre) ---------------- */
+
+	/** Campos da resolução (dano, teste, bônus manual) e o ajuste do Posicionamento avançado gravam ao mudar. */
+	#ligarResolucao() {
+		if (!game.user.isGM) return;
+		for (const campo of this.element.querySelectorAll("[data-resolucao]")) {
+			campo.addEventListener("change", async () => {
+				const area = Number(campo.dataset.area);
+				const nome = campo.dataset.resolucao;
+				const valor = campo.type === "checkbox" ? campo.checked : campo.value;
+				const estado = lerBatalha(this.idBatalha);
+				const novo = nome === "ajuste" ? definirAjuste(estado, area, valor) : atualizarResolucao(estado, area, { [nome]: valor });
+				await gravarBatalha(this.idBatalha, novo);
+			});
+		}
+	}
+
+	static async #estandarte(_ev, alvo) {
+		if (!game.user.isGM) return;
+		await gravarBatalha(this.idBatalha, alternarEstandarte(lerBatalha(this.idBatalha), alvo.dataset.heroi));
+	}
+
+	static #generalDerrotado(_ev, alvo) {
+		const area = Number(alvo.dataset.area);
+		return this.#conduzir(async (estado) => {
+			const r = await rolarDerrotaGeneral(estado);
+			await gravarBatalha(this.idBatalha, derrotarGeneralInimigo(lerBatalha(this.idBatalha), area, r));
+		});
+	}
+
+	/* ---------------- Teste dos Generais ---------------- */
+
+	/** Mestre rola e grava; o jogador sorteado rola no próprio cliente e manda o d20 ao mestre. */
+	static async #rolarGeneral(_ev, alvo) {
+		const lado = Number(alvo.dataset.lado);
+		const estado = lerBatalha(this.idBatalha);
+		if (!podeRolar(estado, lado, { ehGM: game.user.isGM, userId: game.user.id })) return;
+		if (game.user.isGM) {
+			return this.#conduzir(async (e) => {
+				const d20 = await rolarGeneral(e, lado, composicaoBonus(e, lado));
+				const anterior = lerBatalha(this.idBatalha);
+				const { estado: novo } = registrarRolagem(anterior, lado, { d20, por: game.user.id });
+				await gravarComFim(this.idBatalha, anterior, novo);
+			});
+		}
+		if (this.rolandoLocal) return;
+		if (!game.users.activeGM) return this.avisar(L("Socket.SemMestre"));
+		this.rolandoLocal = true;
+		this.render();
+		try {
+			const d20 = await rolarGeneral(estado, lado, composicaoBonus(estado, lado));
+			await pedirAoMestre("rolagemGeneral", { idBatalha: this.idBatalha, lado, d20 });
+		} finally {
+			this.rolandoLocal = false;
+			if (this.rendered) this.render();
+		}
+	}
+
+	/* ---------------- Fim da batalha (mestre) ---------------- */
+
+	static async #reiniciarBatalha() {
+		if (!game.user.isGM) return;
+		const ok = await DialogV2.confirm({
+			window: { title: L("Gerenciador.Reiniciar") },
+			content: `<p>${L("Fim.ReiniciarConfirma")}</p>`,
+			rejectClose: false
+		});
+		if (ok) await reiniciar(this.idBatalha);
+	}
+
+	static async #declararVencedor() {
+		if (!game.user.isGM) return;
+		const estado = lerBatalha(this.idBatalha);
+		const escolha = await DialogV2.wait({
+			window: { title: L("Fim.Declarar") },
+			content: `<p>${L("Fim.DeclararTexto")}</p>`,
+			buttons: [
+				{ action: "0", label: estado.exercitos[0].nome, icon: "fa-solid fa-flag" },
+				{ action: "1", label: estado.exercitos[1].nome, icon: "fa-solid fa-flag" },
+				{ action: "cancelar", label: L("Fim.Cancelar"), default: true }
+			],
+			rejectClose: false
+		});
+		if (escolha !== "0" && escolha !== "1") return;
+		const anterior = lerBatalha(this.idBatalha);
+		await gravarComFim(this.idBatalha, anterior, declararVencedor(anterior, Number(escolha)));
+	}
+
+	/** Animação quando sai um resultado novo do Teste dos Generais (vencedor ou empate) ou a batalha termina. */
+	#anunciarResultado(estado) {
+		const r = estado?.rodada?.resultadoGenerais;
+		const f = estado?.fim;
+		const chave = f ? `fim:${f.vencedor}:${f.tipo}:${f.turno}`
+			: r ? `${estado.turno}:${r.empate ? `empate${r.vez}` : `${r.vencedor}:${r.pontos}`}` : "";
+		if (this.ultimoResultado === undefined) {
+			this.ultimoResultado = chave; // ao abrir o modal, não repete um resultado antigo
+			return;
+		}
+		if (!chave || chave === this.ultimoResultado) return;
+		this.ultimoResultado = chave;
+		const alvo = this.element.querySelector(".t20bm-tabuleiro");
+		if (f) {
+			return requestAnimationFrame(() => animarAbertura({
+				container: this.element, alvo, classe: f.vencedor === 0 ? "aliado" : "inimigo",
+				texto: L("Fim.VenceBatalha", { exercito: estado.exercitos[f.vencedor].nome }),
+				subtitulo: L(`Fim.Tipo.${f.tipo}`)
+			}));
+		}
+		if (r.empate) {
+			return requestAnimationFrame(() => animarAbertura({
+				container: this.element, alvo, imagem: null, classe: "empate",
+				texto: L("Generais.Empate"), subtitulo: L("Generais.RolemDeNovo")
+			}));
+		}
+		const ex = estado.exercitos[r.vencedor];
+		requestAnimationFrame(() => animarAbertura({
+			container: this.element, alvo, imagem: null, classe: r.vencedor === 0 ? "aliado" : "inimigo",
+			texto: L("Generais.VenceRodada", { exercito: ex.nome }),
+			subtitulo: L(r.pontos === 1 ? "Generais.MarcaPonto" : "Generais.MarcaPontos", { pontos: r.pontos })
+		}));
 	}
 
 	static #moverPorBotao(_ev, alvo) {
@@ -303,7 +494,12 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 
 	static #avancar() {
 		return this.#conduzir(async (estado) => {
-			const { estado: novo, entrou } = avancarEtapa(estado);
+			let { estado: novo, entrou } = avancarEtapa(estado);
+			// Teste dos Generais: sorteia o jogador (exceto o mestre) que rola pelo general aliado.
+			if (entrou === "generais" && !novo.rodada.rolaGeneral) {
+				const jogadores = game.users.filter((u) => u.active && !u.isGM).map((u) => u.id);
+				novo = definirQuemRola(novo, sortearJogador(jogadores));
+			}
 			await gravarBatalha(this.idBatalha, novo);
 			if (entrou === "preparacao") await lembretePreparacao(novo.turno);
 		});
@@ -342,6 +538,120 @@ function larguraDaBarraLateral() {
 		}
 	}
 	return Math.max(0, Math.ceil(window.innerWidth - esquerda));
+}
+
+/* ---------------- Preparação: quem precisa marcar "concluí" ---------------- */
+
+/**
+ * Jogadores conectados que precisam concluir a Preparação: os donos dos heróis da batalha.
+ * Se nenhum jogador conectado é dono de herói, todos os jogadores conectados.
+ */
+function jogadoresObrigatorios(estado) {
+	const ativos = game.users.filter((u) => u.active && !u.isGM);
+	const ehDono = (u) => estado.herois.some((h) => fromUuidSync(h.uuid, { strict: false })?.testUserPermission?.(u, "OWNER"));
+	const comHeroi = ativos.filter(ehDono);
+	return comHeroi.length ? comHeroi : ativos;
+}
+
+function dadosPreparacao(estado, etapa) {
+	if (etapa !== "preparacao") return { mostrar: false };
+	const prontos = new Set(estado.rodada.prontos);
+	const jogadores = jogadoresObrigatorios(estado).map((u) => ({ nome: u.name, pronto: prontos.has(u.id), cor: u.color?.css ?? u.color }));
+	const euObrigatorio = jogadoresObrigatorios(estado).some((u) => u.id === game.user.id);
+	return {
+		mostrar: jogadores.length > 0,
+		jogadores,
+		total: jogadores.length,
+		quantos: jogadores.filter((j) => j.pronto).length,
+		euObrigatorio,
+		euPronto: prontos.has(game.user.id)
+	};
+}
+
+registrarTratador("pronto", async ({ idBatalha, pronto }, usuario) => {
+	let estado = lerBatalha(idBatalha);
+	if (!estado || estado.etapa !== "preparacao" || usuario.isGM) return;
+	estado = marcarPronto(estado, usuario.id, pronto);
+	// Todos prontos: a etapa avança sozinha (para o Posicionamento).
+	if (todosProntos(estado, jogadoresObrigatorios(estado).map((u) => u.id))) estado = avancarEtapa(estado).estado;
+	await gravarBatalha(idBatalha, estado);
+});
+
+/* ---------------- Teste dos Generais: dados para o tabuleiro ---------------- */
+
+const sinal = (n) => (n > 0 ? `+${n}` : n < 0 ? `−${Math.abs(n)}` : "+0");
+
+/** Na etapa dos generais: composição do bônus, rolagens e botões em cada cartão de exército. */
+function dadosGenerais(estado, v, gm) {
+	if (v.etapa !== "generais") return null;
+	const r = estado.rodada.resultadoGenerais;
+	const sorteado = estado.rodada.rolaGeneral ? game.users.get(estado.rodada.rolaGeneral) : null;
+	v.exercitos.forEach((ex, i) => {
+		const comp = composicaoBonus(estado, i);
+		const rolagem = estado.rodada.generais?.[i] ?? null;
+		ex.teste = {
+			lado: i,
+			itens: comp.itens.map((it) => ({ ...it, valorTxt: sinal(it.valor) })),
+			totalTxt: sinal(comp.total),
+			rolagem: rolagem && { ...rolagem, bonusTxt: sinal(rolagem.bonus) },
+			podeRolar: podeRolar(estado, i, { ehGM: gm, userId: game.user.id }),
+			quem: i === 0 && sorteado ? sorteado.name : L("Generais.Mestre"),
+			venceu: !!r && !r.empate && r.vencedor === i
+		};
+	});
+	if (!r || r.empate) {
+		return r?.empate
+			? { mensagemTitulo: L("Generais.Empate"), mensagemTexto: L("Generais.RolemDeNovo") }
+			: { mensagemTitulo: L("Modal.Mensagens.generais.Titulo"), mensagemTexto: L("Modal.Mensagens.generais.Texto") };
+	}
+	const nome = estado.exercitos[r.vencedor].nome;
+	const notas = [];
+	if (r.desempateBonus) notas.push(L("Generais.DesempateBonus"));
+	if (estado.fim) notas.push(L(`Generais.Fim.${estado.fim.tipo}`, { exercito: estado.exercitos[estado.fim.vencedor].nome }));
+	else if (r.fugindo !== null && r.fugindo !== undefined) notas.push(L("Generais.Fuga", { exercito: estado.exercitos[r.fugindo].nome }));
+	else if (r.fugaInterrompida) notas.push(L("Generais.FugaInterrompida"));
+	return {
+		mensagemTitulo: L("Generais.VenceRodadaFrase", { exercito: nome, pontos: r.pontos }),
+		mensagemTexto: notas.join(" ") || L("Generais.Proximo")
+	};
+}
+
+registrarTratador("rolagemGeneral", async ({ idBatalha, lado, d20 }, usuario) => {
+	const estado = lerBatalha(idBatalha);
+	const valor = Math.trunc(Number(d20));
+	if (!estado || !(valor >= 1 && valor <= 20)) return;
+	if (!podeRolar(estado, lado, { ehGM: usuario.isGM, userId: usuario.id })) return;
+	await gravarComFim(idBatalha, estado, registrarRolagem(estado, lado, { d20: valor, por: usuario.id }).estado);
+});
+
+/* ---------------- Fim da batalha ---------------- */
+
+/** Grava (mestre) e, se a batalha acabou de terminar, manda o resumo para o chat. */
+async function gravarComFim(id, anterior, novo) {
+	await gravarBatalha(id, novo);
+	if (!anterior.fim && novo.fim) {
+		const dados = formatarFim(resumoFim(novo, { nds: await ndsDaTabela(novo) }));
+		await enviarResumoFim(dados);
+	}
+}
+
+const fmtNumero = (n) => (Number.isInteger(n) ? String(n) : String(n).replace(".", ","));
+
+/** Textos da tela de resultado e do cartão de chat. */
+function formatarFim(r) {
+	if (!r) return null;
+	return {
+		...r,
+		titulo: L("Fim.VenceBatalha", { exercito: r.vencedorNome }),
+		tipoTxt: L(`Fim.Tipo.${r.tipo}`),
+		lado: r.vencedor === 0 ? "aliado" : "inimigo",
+		placarTxt: `${r.placar[0]} × ${r.placar[1]}`,
+		turnosTxt: L(r.turnos === 1 ? "Fim.UmTurno" : "Fim.Turnos", { n: r.turnos }),
+		baixas: r.baixas.map((b) => ({ ...b, texto: L("Fim.BaixasTexto", { percentual: fmtNumero(b.percentual), feridos: fmtNumero(b.feridos), mortos: fmtNumero(b.mortos) }) })),
+		recompensa: r.ndMedio !== null ? L("Fim.Recompensa", { nd: fmtNumero(r.ndMedio) }) : r.semND ? L("Fim.SemND") : null,
+		derrotaHerois: !r.heroisVenceram ? L("Fim.DerrotaHerois") : null,
+		historico: r.historico.map((h) => ({ ...h, totaisTxt: h.totais.length ? `${h.totais[0]} × ${h.totais[1]}` : "—", placarTxt: h.placar.length ? `${h.placar[0]} × ${h.placar[1]}` : "" }))
+	};
 }
 
 /* ---------------- Pedido de movimento (executado pelo mestre ativo) ---------------- */

@@ -8,8 +8,11 @@
 import { TAMANHOS, POSICOES, ETAPAS, ETAPA_PRE } from "./constantes.js";
 import { completarEstado } from "./estado.js";
 import { limiarVitoria } from "./regras.js";
+import { camposDoEvento, bonusDaRodada, eventoPorChave } from "./evento.js";
+import { MECANICAS } from "./constantes.js";
 
 const ROMANOS = ["I", "II", "III", "IV"];
+const comSinal = (n) => (n > 0 ? `+${n}` : n < 0 ? `−${Math.abs(n)}` : "+0");
 const doisDigitos = (n) => String(Math.max(0, Math.trunc(Number(n) || 0))).padStart(2, "0");
 const temConteudo = (r) => !!(r && (r.uuid || r.nome || r.img));
 
@@ -70,6 +73,8 @@ export function visaoBatalha(salvo, { resolver = (r) => r } = {}) {
 
 	const areas = e.areas.map((a, i) => ({
 		indice: i,
+		evento: e.rodada.eventos?.[i] ?? null,
+		inimigo: e.rodada.inimigos?.[i] ? resolver(e.rodada.inimigos[i]) : null,
 		romano: ROMANOS[i],
 		nome: a.nome,
 		subtitulo: POSICOES[i].nome,
@@ -77,6 +82,28 @@ export function visaoBatalha(salvo, { resolver = (r) => r } = {}) {
 		destaque: areasOcupadas.has(i),
 		herois: herois.filter((h) => h.area === i)
 	}));
+	for (const a of areas) a.ocupada = a.herois.length > 0;
+
+	// Resolução dos eventos: uma linha por área com evento sorteado.
+	const bonus = bonusDaRodada(e);
+	const resolucoes = areas.filter((a) => a.evento).map((a) => {
+		const def = eventoPorChave(a.evento.chave);
+		return {
+			indice: a.indice,
+			area: a.nome,
+			evento: a.evento,
+			mecanica: MECANICAS[def?.mecanica]?.nome ?? "",
+			campos: camposDoEvento(a.evento.chave, { acoesAbertas: e.opcionais.acoesAbertas }),
+			bonus: bonus.porArea[a.indice] ?? 0,
+			bonusTxt: comSinal(bonus.porArea[a.indice] ?? 0),
+			herois: a.herois
+		};
+	});
+	for (const a of areas) {
+		a.bonus = bonus.porArea[a.indice];
+		a.bonusTxt = a.bonus === undefined ? "" : comSinal(a.bonus);
+		a.ajuste = e.rodada.ajustes?.[a.indice] ?? 0;
+	}
 
 	const areaGrupo = areas[e.grupoArea] ?? areas[1];
 	return {
@@ -94,6 +121,10 @@ export function visaoBatalha(salvo, { resolver = (r) => r } = {}) {
 		mensagem: { etapa: pre ? ETAPA_PRE : e.etapa, area: areaGrupo.subtitulo },
 		imagens: e.imagens,
 		lobosSolitarios: e.opcionais.lobosSolitarios,
-		preBatalha: e.opcionais.preBatalha
+		preBatalha: e.opcionais.preBatalha,
+		acoesAbertas: e.opcionais.acoesAbertas,
+		posicionamentoAvancado: e.opcionais.posicionamentoAvancado,
+		resolucoes,
+		bonusEvento: bonus.total
 	};
 }
