@@ -844,6 +844,7 @@ button.t20bm-icone {
 }
 .t20bm-token.estandarte.carregado { box-shadow: 0 0 10px 2px rgba(201, 168, 106, 0.8); }
 .t20bm-token.vazio { border: 2px dashed rgba(236, 228, 210, 0.3); }
+.t20bm-token.personalidade.vazio { color: var(--bm-texto-suave); font-size: 22px; }
 
 .t20bm-presencas {
 	display: grid;

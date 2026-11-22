@@ -59,6 +59,7 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 			adicionarModificador: ConfiguradorBatalha.#adicionarModificador,
 			adicionarPersonalizado: ConfiguradorBatalha.#adicionarPersonalizado,
 			adicionarEstandarte: ConfiguradorBatalha.#adicionarEstandarte,
+			adicionarPersonalidade: ConfiguradorBatalha.#adicionarPersonalidade,
 			adicionarJogadores: ConfiguradorBatalha.#adicionarJogadores,
 			moverNaLista: ConfiguradorBatalha.#moverNaLista,
 			duplicarNaLista: ConfiguradorBatalha.#duplicarNaLista,
@@ -273,6 +274,13 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 		const campo = `exercitos.${lado}.modificadores`;
 		const lista = foundry.utils.getProperty(this.rascunho, campo);
 		this.#definir(campo, adicionarModificador(lista, { nome: L("Configurador.NovoModificador"), valor: 1 }));
+	}
+
+	/** Personalidade sem ator: só nome e imagem (como os generais). */
+	static #adicionarPersonalidade(_ev, alvo) {
+		const campo = `exercitos.${Number(alvo.dataset.lado)}.personalidades`;
+		const lista = foundry.utils.getProperty(this.rascunho, campo) ?? [];
+		this.#definir(campo, [...lista, { uuid: null, nome: L("Configurador.NovaPersonalidade"), img: null }]);
 	}
 
 	static #adicionarEstandarte(_ev, alvo) {

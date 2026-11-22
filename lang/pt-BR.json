@@ -97,7 +97,10 @@
 			},
 			"GuerraSubstituto": "Bônus de Guerra quando o substituto assumir o comando. Vazio: a regra de general derrotado (Guerra do anterior −1d6−1).",
 			"JogadoresAdicionados": "{n} personagens adicionados à batalha.",
-			"JogadoresJaEstao": "Todos os personagens já estão na batalha."
+			"JogadoresJaEstao": "Todos os personagens já estão na batalha.",
+			"SolteAtorOu": "Solte atores aqui, ou",
+			"PersonalidadeImagem": "personalidade por imagem",
+			"NovaPersonalidade": "Personalidade"
 		},
 		"Inimigos": {
 			"Dica": "Tabela do exército inimigo: cada inimigo é uma face do dado. Com 6 inimigos rola-se 1d6, com 8 rola-se 1d8. Arraste atores do diretório ou de compêndios; a ordem define a face. Repita um inimigo para deixá-lo mais provável.",

@@ -163,7 +163,11 @@
 						<span class="t20bm-sobretitulo">{{localize "T20BM.Modal.Personalidades"}}</span>
 						<div class="t20bm-fila">
 							{{#each personalidades}}
+							{{#if img}}
 							<img class="t20bm-token personalidade {{#if podeVer}}clicavel{{/if}}" src="{{img}}" alt="{{nome}}" data-tooltip="{{nome}}" {{#if podeVer}}data-action="abrirFicha" data-uuid="{{uuid}}"{{/if}}>
+							{{else}}
+							<span class="t20bm-token personalidade vazio" data-tooltip="{{nome}}"><i class="fa-solid fa-user"></i></span>
+							{{/if}}
 							{{else}}
 							<span class="t20bm-nenhum">—</span>
 							{{/each}}

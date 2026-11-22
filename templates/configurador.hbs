@@ -150,12 +150,20 @@
 			<ul class="t20bm-lista-retratos" data-soltar="exercitos.{{i}}.personalidades" data-modo="lista">
 				{{#each personalidades}}
 				<li>
-					{{#if img}}<img class="t20bm-retrato" src="{{img}}" alt="">{{/if}}
+					{{#if img}}<img class="t20bm-retrato" src="{{img}}" alt="">{{else}}<span class="t20bm-retrato vazio"></span>{{/if}}
+					{{#if temAtor}}
 					<a class="t20bm-nome" data-action="abrirFicha" data-uuid="{{uuid}}">{{nome}}</a>
+					{{else}}
+					<input type="text" name="exercitos.{{../i}}.personalidades.{{@index}}.nome" value="{{nome}}">
+					<button type="button" class="t20bm-icone" data-action="escolherImagem" data-campo="exercitos.{{../i}}.personalidades.{{@index}}.img" data-tooltip="T20BM.Configurador.Escolher"><i class="fa-solid fa-file-image"></i></button>
+					{{/if}}
 					<button type="button" class="t20bm-icone" data-action="removerDaLista" data-campo="exercitos.{{../i}}.personalidades" data-indice="{{@index}}" data-tooltip="T20BM.Configurador.Remover"><i class="fa-solid fa-xmark"></i></button>
 				</li>
 				{{/each}}
-				<li class="t20bm-soltar-aqui">{{localize "T20BM.Configurador.SolteAtores"}}</li>
+				<li class="t20bm-soltar-aqui">
+					{{localize "T20BM.Configurador.SolteAtorOu"}}
+					<button type="button" data-action="adicionarPersonalidade" data-lado="{{i}}"><i class="fa-solid fa-plus"></i> {{localize "T20BM.Configurador.PersonalidadeImagem"}}</button>
+				</li>
 			</ul>
 
 			{{!-- Estandartes --}}
