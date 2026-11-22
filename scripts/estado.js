@@ -15,7 +15,7 @@ function exercitoPadrao(lado) {
 		pontosIniciais: 0,
 		pontos: 0,
 		general: { uuid: null, nome: "", img: null, guerra: null },
-		substituto: { uuid: null, nome: "", img: null },
+		substituto: { uuid: null, nome: "", img: null, guerra: null },
 		personalidades: [],
 		estandartes: [],
 		modificadores: []
@@ -74,6 +74,9 @@ export function estadoPadrao(nome = "") {
  *   rolaGeneral  usuário sorteado para rolar o general aliado
  *   generais  { 0|1: { d20, bonus, total, por } }        rolagens do Teste dos Generais
  */
+/** Estado de batalha de um herói zerado: sem estandarte e vivo (o voo é do personagem, fica). */
+export const estadoInicialDoHeroi = (h) => ({ ...h, estandarte: false, morto: false });
+
 export function novaRodada() {
 	return {
 		prontos: {}, inicio: null, eventos: {}, inimigos: {}, ajustes: {}, rolaGeneral: null, generais: {},
@@ -123,7 +126,7 @@ export function reiniciarBatalha(estado) {
 	e.turno = 0;
 	e.etapa = "pre";
 	e.grupoArea = 1;
-	e.herois = e.herois.map((h) => ({ ...h, area: 1 }));
+	e.herois = e.herois.map(estadoInicialDoHeroi).map((h) => ({ ...h, area: 1 }));
 	for (const ex of e.exercitos) {
 		ex.pontos = ex.pontosIniciais;
 		ex.estandartes = ex.estandartes.map((s) => ({ ...s, carregadoPor: null }));

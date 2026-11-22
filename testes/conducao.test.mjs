@@ -78,3 +78,12 @@ assert.deepEqual(Object.keys(ev.rodada.eventos).sort(), ["1", "2"]);
 assert.equal(ev.rodada.inimigos[2].nome, "Orc");
 assert.equal("evento" in completarEstado({ rodada: { evento: { x: 1 } } }).rodada, false, "campo antigo removido");
 console.log("prontos e sorteios: ok");
+
+/* Iniciar a batalha zera o estado dos heróis (estandarte, morto); o voo fica */
+import { reiniciarBatalha } from "../scripts/estado.js";
+const herdado = completarEstado({ herois: [{ uuid: "h1", estandarte: true, voa: true }, { uuid: "h2", morto: true, area: 3 }] });
+const iniciada = avancarEtapa(herdado).estado;
+assert.deepEqual(iniciada.herois.map((h) => [h.estandarte, h.morto, !!h.voa]), [[false, false, true], [false, false, false]]);
+const dup = reiniciarBatalha(completarEstado({ ...herdado, iniciada: true, turno: 3 }));
+assert.deepEqual(dup.herois.map((h) => [h.estandarte, h.morto, h.area]), [[false, false, 1], [false, false, 1]], "reiniciar/duplicar também zeram");
+console.log("estado dos heróis ao iniciar: ok");

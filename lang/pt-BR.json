@@ -75,9 +75,9 @@
 			"NovoModificador": "Modificador",
 			"Adicionar": "Adicionar",
 			"Remover": "Remover",
-			"HeroisDica": "Personagens dos jogadores que participam da batalha. Começam na Retaguarda.",
+			"HeroisDica": "Personagens que participam da batalha. Começam na Retaguarda.",
 			"AdicionarJogadores": "Adicionar personagens dos jogadores",
-			"SemJogadores": "Nenhum personagem com dono jogador neste mundo.",
+			"SemJogadores": "Nenhum ator do tipo personagem neste mundo.",
 			"CampoDica": "As 4 áreas correspondem às posições da regra: o modificador do evento e o subtítulo (nome da posição) são fixos; só o nome da área muda.",
 			"NomeArea": "Nome",
 			"SubtituloArea": "Subtítulo (fixo)",
@@ -94,7 +94,10 @@
 				"SemGuerraAliado": "O general do seu exército está sem bônus de Guerra (a rolagem usará +0).",
 				"SemGuerraInimigo": "O general inimigo está sem bônus de Guerra (a rolagem usará +0).",
 				"SemImagemCeu": "O combate aéreo está ativo, mas sem imagem do mapa aéreo."
-			}
+			},
+			"GuerraSubstituto": "Bônus de Guerra quando o substituto assumir o comando. Vazio: a regra de general derrotado (Guerra do anterior −1d6−1).",
+			"JogadoresAdicionados": "{n} personagens adicionados à batalha.",
+			"JogadoresJaEstao": "Todos os personagens já estão na batalha."
 		},
 		"Inimigos": {
 			"Dica": "Tabela do exército inimigo: cada inimigo é uma face do dado. Com 6 inimigos rola-se 1d6, com 8 rola-se 1d8. Arraste atores do diretório ou de compêndios; a ordem define a face. Repita um inimigo para deixá-lo mais provável.",
@@ -260,7 +263,7 @@
 			"SemNome": "o general",
 			"RemoverTexto": "{atual} sai de cena. {novo} assume o comando e rola nos próximos Testes dos Generais.",
 			"GuerraNovo": "Bônus de Guerra de {novo}",
-			"GuerraNovoDica": "Guerra na ficha do substituto: {ficha}. Sem ficha, o campo vem com o bônus do general anterior.",
+			"GuerraNovoDica": "Cadastrada no configurador: {cadastrada}. Guerra na ficha do substituto: {ficha}. Sem nenhuma, o campo vem com o bônus do general anterior.",
 			"RemoverSemSubstituto": "{atual} sai de cena e não há substituto disponível. Um oficial assume o comando com a Guerra do general anterior −1d6−1 ({min} a {max}), rolada agora.",
 			"FimDaRodada": "Fim da rodada",
 			"EncerrarTurno": "Encerrar turno e avançar",
@@ -311,7 +314,7 @@
 		},
 		"Ceu": {
 			"Ativar": "Combate aéreo (área “Sob os céus”)",
-			"Dica": "Área opcional de uma seção só, acima das quatro áreas terrestres. Sobe aos céus quem voa (marque na aba Heróis) e começou o turno na Retaguarda, no Front ou Atrás das linhas inimigas; de lá, desce-se para qualquer área terrestre, inclusive o Acampamento.",
+			"Dica": "Área opcional de uma seção só, acima das quatro áreas terrestres. Sobe aos céus quem voa (marque na aba Heróis) e começou o turno na Retaguarda, no Front ou Atrás das linhas inimigas; de lá, desce-se para qualquer área terrestre, inclusive o Acampamento. Nome e modificador ficam na aba Campo de batalha.",
 			"Subtitulo": "Sob os céus",
 			"Mod": "Modificador do evento",
 			"ModDica": "Regra do combate aéreo: +5 na rolagem de evento. Os testes de perícia desses eventos têm CD +5, e o bônus em Guerra por resolver um evento aqui aumenta em +2.",

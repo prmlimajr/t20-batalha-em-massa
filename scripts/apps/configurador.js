@@ -104,7 +104,7 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 				pontosIniciais: ex.pontosIniciais,
 				pontos: ex.pontos,
 				general: retratoVivo(ex.general, { comGuerra: true }),
-				substituto: retratoVivo(ex.substituto),
+				substituto: retratoVivo(ex.substituto, { comGuerra: true }),
 				personalidades: ex.personalidades.map((r) => retratoVivo(r)),
 				estandartes: ex.estandartes.map((r) => retratoVivo(r)),
 				modificadores: ex.modificadores.map((m) => ({ ...m, sinal: m.valor >= 0 ? "+" : "" })),
@@ -172,7 +172,7 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 			const novo = { ...atual, ...retrato };
 			// General: o bônus de Guerra do configurador é o que vale na rolagem; vem preenchido com o da ficha.
 			const guerraFicha = Number(ator.system?.pericias?.guer?.value);
-			if (caminhoCampo.endsWith(".general") && Number.isFinite(guerraFicha) && (atual.guerra === null || atual.guerra === undefined || atual.guerra === "")) {
+			if ((caminhoCampo.endsWith(".general") || caminhoCampo.endsWith(".substituto")) && Number.isFinite(guerraFicha) && (atual.guerra === null || atual.guerra === undefined || atual.guerra === "")) {
 				novo.guerra = guerraFicha;
 			}
 			return this.#definir(caminhoCampo, novo);
@@ -237,7 +237,7 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 		this.comandoEditado = [false, false];
 		log("batalha salva", this.idBatalha);
 		ui.notifications.info(L("Configurador.Salvo"));
-		this.render();
+		this.close({ descartar: true });
 	}
 
 	static async #escolherImagem(_ev, alvo) {
@@ -282,9 +282,12 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 	}
 
 	static #adicionarJogadores() {
-		const atores = game.actors.filter((a) => a.type === "character" && a.hasPlayerOwner);
+		const atores = game.actors.filter((a) => a.type === "character");
 		if (!atores.length) return ui.notifications.info(L("Configurador.SemJogadores"));
+		const antes = this.rascunho.herois.length;
 		this.#definir("herois", adicionarHerois(this.rascunho.herois, atores.map((a) => ({ ...retratoDeAtor(a), voa: atorVoa(a) }))));
+		const novos = this.rascunho.herois.length - antes;
+		ui.notifications.info(novos ? L("Configurador.JogadoresAdicionados", { n: novos }) : L("Configurador.JogadoresJaEstao"));
 	}
 
 	static #moverNaLista(_ev, alvo) {

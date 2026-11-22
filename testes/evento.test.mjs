@@ -89,3 +89,18 @@ assert.equal(temSubstituto(sg.exercitos[0]), false);
 sg = substituirGeneral(sg, 0, 8); // sem substituto: um oficial sem nome
 assert.deepEqual(sg.exercitos[0].general, { uuid: null, nome: "", img: null, guerra: 8 });
 console.log("evento: ok");
+
+/* Substituto com Guerra cadastrada (configurador) */
+import { guerraDoSubstituto } from "../scripts/evento.js";
+const comSub = (guerra) => completarEstado({
+	exercitos: [{ pontos: 0 }, { general: { nome: "Herman", guerra: 23 }, substituto: { uuid: "Actor.l", nome: "Leona", guerra } }],
+	rodada: { eventos: { 2: { chave: "enfrentarGeneral" } } }
+});
+assert.equal(guerraDoSubstituto(comSub(15).exercitos[1]), 15);
+assert.equal(guerraDoSubstituto(comSub("").exercitos[1]), null);
+let dg = derrotarGeneralInimigo(comSub(15), 2, { pontos: 3, penalidade: 6 });
+assert.deepEqual([dg.exercitos[1].general.nome, dg.exercitos[1].general.guerra], ["Leona", 15], "vale a Guerra cadastrada");
+assert.equal(dg.exercitos[1].substituto.guerra, null);
+dg = derrotarGeneralInimigo(comSub(null), 2, { pontos: 3, penalidade: 6 });
+assert.equal(dg.exercitos[1].general.guerra, 17, "sem cadastro: anterior −(1d6+1)");
+console.log("substituto com Guerra: ok");

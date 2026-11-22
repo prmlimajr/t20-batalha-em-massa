@@ -994,6 +994,7 @@ button.t20bm-icone {
 .t20bm-area-campo.area-ceu .t20bm-herois { justify-content: center; }
 .t20bm-area-ceu-config legend label { display: inline-flex; align-items: center; gap: 6px; font-weight: bold; }
 .t20bm-medidas { font-weight: bold; }
+.t20bm-check-linha { display: inline-flex; align-items: center; gap: 6px; font-weight: bold; }
 
 .t20bm-area-campo {
 	position: relative;

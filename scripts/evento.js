@@ -118,20 +118,29 @@ export function substituirGeneral(salvo, lado, guerra) {
 	const e = completarEstado(salvo);
 	const ex = e.exercitos[lado];
 	const valor = Math.trunc(Number(guerra) || 0);
+	const { guerra: _g, ...semGuerra } = ex.substituto ?? {};
 	ex.general = temSubstituto(ex)
-		? { ...ex.substituto, guerra: valor }
+		? { ...semGuerra, guerra: valor }
 		: { uuid: null, nome: "", img: null, guerra: valor };
-	ex.substituto = { uuid: null, nome: "", img: null };
+	ex.substituto = { uuid: null, nome: "", img: null, guerra: null };
 	return e;
 }
 
+/** Bônus de Guerra cadastrado para o substituto no configurador (null se vazio). */
+export function guerraDoSubstituto(ex) {
+	const g = ex?.substituto?.guerra;
+	return g === null || g === undefined || g === "" || !Number.isFinite(Number(g)) ? null : Math.trunc(Number(g));
+}
+
 /**
- * O grupo derrotou o general inimigo: o exército dos heróis ganha `pontos` (1d4+1) e o substituto
- * assume com Guerra = Guerra do anterior − `penalidade` (1d6+1).
+ * O grupo derrotou o general inimigo: o exército dos heróis ganha `pontos` (1d4+1). O substituto assume
+ * com a Guerra cadastrada para ele; sem valor cadastrado (ou sem substituto), a do anterior − `penalidade` (1d6+1).
  */
 export function derrotarGeneralInimigo(salvo, area, { pontos, penalidade }) {
-	const guerraAnterior = Number(completarEstado(salvo).exercitos[1].general?.guerra) || 0;
-	const e = substituirGeneral(salvo, 1, guerraAnterior - penalidade);
+	const inimigo = completarEstado(salvo).exercitos[1];
+	const guerraAnterior = Number(inimigo.general?.guerra) || 0;
+	const cadastrada = temSubstituto(inimigo) ? guerraDoSubstituto(inimigo) : null;
+	const e = substituirGeneral(salvo, 1, cadastrada ?? guerraAnterior - penalidade);
 	e.exercitos[0].pontos = (Number(e.exercitos[0].pontos) || 0) + pontos;
 	const ev = e.rodada.eventos?.[area];
 	if (ev) e.rodada.eventos = { ...e.rodada.eventos, [area]: { ...ev, generalDerrotado: { pontos, penalidade, anterior: guerraAnterior } } };

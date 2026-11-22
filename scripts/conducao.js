@@ -3,7 +3,7 @@
  * Recebe e devolve estados completos (cópias); quem grava é o mestre (armazenamento.gravarBatalha).
  */
 import { MODIFICADORES_GUERRA, ETAPA_PRE, ETAPAS } from "./constantes.js";
-import { completarEstado, novaRodada } from "./estado.js";
+import { completarEstado, novaRodada, estadoInicialDoHeroi } from "./estado.js";
 import { proximaEtapa, etapaAnterior, motivacao } from "./regras.js";
 import { registrarInicio } from "./posicionamento.js";
 
@@ -51,7 +51,11 @@ export function avancarEtapa(salvo) {
 	const e = completarEstado(salvo);
 	if (e.fim) return { estado: e, entrou: e.etapa, novoTurno: false }; // batalha encerrada: nada avança
 	const prox = proximaEtapa(e.etapa, e.turno);
-	if (e.etapa === ETAPA_PRE) e.iniciada = true;
+	if (e.etapa === ETAPA_PRE) {
+		// A batalha começa: o estado de cada herói (estandarte, morto) começa do zero.
+		e.iniciada = true;
+		e.herois = e.herois.map(estadoInicialDoHeroi);
+	}
 	e.etapa = prox.etapa;
 	e.turno = prox.turno;
 	if (prox.novaRodada) e.rodada = novaRodada();

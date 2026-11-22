@@ -21,7 +21,7 @@ import {
 	ndsDaTabela, enviarResumoFim, rolarNovoOficial
 } from "../rolagens.js";
 import { composicaoBonus, podeRolar, registrarRolagem, sortearJogador, definirQuemRola, resetarGenerais } from "../generais.js";
-import { atualizarResolucao, alternarEstandarte, derrotarGeneralInimigo, definirAjuste, substituirGeneral, temSubstituto } from "../evento.js";
+import { atualizarResolucao, alternarEstandarte, derrotarGeneralInimigo, definirAjuste, substituirGeneral, temSubstituto, guerraDoSubstituto } from "../evento.js";
 import { animarAbertura } from "../abertura.js";
 import { validarMovimento, moverHeroi, opcoesDeMovimento, removerHeroi, alternarMorto, alternarVoo } from "../posicionamento.js";
 import { pedirAoMestre, registrarTratador } from "../socket.js";
@@ -452,13 +452,13 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 
 		const sub = retratoVivo(ex.substituto, { comGuerra: true });
 		const novo = sub.nome || L("Evento.Oficial");
-		const sugestao = sub.guerraFicha ?? anterior;
+		const sugestao = guerraDoSubstituto(ex) ?? sub.guerraFicha ?? anterior;
 		const guerra = await DialogV2.prompt({
 			window: { title: L("Generais.Remover") },
 			content: `<p>${L("Generais.RemoverTexto", { atual, novo })}</p>
 				<div class="form-group"><label>${L("Generais.GuerraNovo", { novo })}</label>
 				<div class="form-fields"><input type="number" name="guerra" step="1" value="${sugestao}" autofocus></div>
-				<p class="hint">${L("Generais.GuerraNovoDica", { ficha: sub.guerraFicha ?? "—" })}</p></div>`,
+				<p class="hint">${L("Generais.GuerraNovoDica", { cadastrada: guerraDoSubstituto(ex) ?? "—", ficha: sub.guerraFicha ?? "—" })}</p></div>`,
 			ok: { label: L("Generais.Remover"), icon: "fa-solid fa-user-slash", callback: (_e, botao) => botao.form.elements.guerra.value },
 			rejectClose: false
 		});
