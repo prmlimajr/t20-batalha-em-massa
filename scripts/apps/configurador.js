@@ -112,7 +112,6 @@ export class ConfiguradorBatalha extends HandlebarsApplicationMixin(ApplicationV
 			})),
 			modificadoresB2,
 			herois: e.herois.map((h) => retratoVivo(h)),
-			ceuAtivo: !!e.ceu?.ativo,
 			formulaInimigos: formulaInimigos(e.tabelaInimigos),
 			inimigos: this.aba === "inimigos"
 				? await Promise.all(e.tabelaInimigos.map((entrada, i) => dadosInimigo(entrada, i + 1)))

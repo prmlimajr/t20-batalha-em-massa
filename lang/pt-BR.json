@@ -186,10 +186,7 @@
 			"SemMestre": "Nenhum mestre conectado: o pedido não pode ser atendido agora."
 		},
 		"Posicionamento": {
-			"Grupo": "Grupo",
-			"Recuar": "Recuar",
-			"Avancar": "Avançar",
-			"Dica": "Arraste o token ou use os botões: até uma área à frente ou atrás de onde o turno começou. Dá para mudar de ideia enquanto a etapa durar.",
+			"Dica": "Arraste o token para a área de destino: até uma área à frente ou atrás de onde o turno começou (os destinos possíveis se destacam ao arrastar). Dá para mudar de ideia enquanto a etapa durar.",
 			"Motivos": {
 				"NaoEsta": "Esse herói não está na batalha.",
 				"AreaInvalida": "Área inválida.",
@@ -201,9 +198,7 @@
 				"Morto": "Esse herói está morto.",
 				"NaoVoa": "Só quem voa pode ir para “Sob os céus”.",
 				"GrupoNaoVoa": "O grupo só sobe aos céus se todos os heróis voarem."
-			},
-			"Subir": "Subir aos céus",
-			"Descer": "Descer: {area}"
+			}
 		},
 		"Preparacao": {
 			"Prontos": "Prontos: {quantos} de {total}",
@@ -316,15 +311,15 @@
 		},
 		"Ceu": {
 			"Ativar": "Combate aéreo (área “Sob os céus”)",
-			"Dica": "Posição adicional para batalhas com aeronaves e combatentes alados, uma seção só, acima das quatro áreas terrestres. Alcançável a partir de qualquer posição exceto o Acampamento, e só por quem voa (marque na aba Heróis).",
+			"Dica": "Área opcional de uma seção só, acima das quatro áreas terrestres. Sobe aos céus quem voa (marque na aba Heróis) e começou o turno na Retaguarda, no Front ou Atrás das linhas inimigas; de lá, desce-se para qualquer área terrestre, inclusive o Acampamento.",
 			"Subtitulo": "Sob os céus",
 			"Mod": "Modificador do evento",
 			"ModDica": "Regra do combate aéreo: +5 na rolagem de evento. Os testes de perícia desses eventos têm CD +5, e o bônus em Guerra por resolver um evento aqui aumenta em +2.",
 			"Imagem": "Imagem do mapa aéreo",
 			"ImagemDica": "Ideal: as mesmas medidas da imagem do campo terrestre",
+			"NotaEvento": "Sob os céus: CD dos testes +{cd}; resolver o evento rende +{bonus} a mais no bônus de Guerra.",
 			"Voa": "Voa",
-			"VoaDica": "Pode ir para “Sob os céus”. Vem marcado se a ficha tem deslocamento de voo.",
-			"NotaEvento": "Sob os céus: CD dos testes +{cd}; resolver o evento rende +{bonus} a mais no bônus de Guerra."
+			"VoaDica": "Pode ir para “Sob os céus”. Vem marcado se a ficha tem deslocamento de voo; o mestre ajusta aqui ou com o clique direito no token."
 		}
 	}
 }

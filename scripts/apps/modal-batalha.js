@@ -93,7 +93,6 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 			motivacao: ModalBatalha.#motivacao,
 			avancar: ModalBatalha.#avancar,
 			voltar: ModalBatalha.#voltar,
-			mover: ModalBatalha.#moverPorBotao,
 			pronto: ModalBatalha.#pronto,
 			sortearInimigo: ModalBatalha.#sortearInimigo,
 			sortearEvento: ModalBatalha.#sortearEvento,
@@ -129,16 +128,8 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 		}
 		const posicionando = v.etapa === "posicionamento";
 		const temHeroiProprio = salvo.herois.some((h) => ehDono(h.uuid));
-		const movimento = {
-			mostrar: posicionando && (gm || temHeroiProprio),
-			opcoes: opcoes.map((o) => ({
-				...o,
-				rotulo: v.lobosSolitarios ? o.nome : L("Posicionamento.Grupo"),
-				botoes: botoesDeMovimento(o, v.areas)
-			})),
-
-			lobos: v.lobosSolitarios
-		};
+		// Movimento só por arrastar o token (sem botões); no rodapé fica a dica.
+		const movimento = { mostrar: posicionando && (gm || temHeroiProprio) };
 		const generais = dadosGenerais(salvo, v, gm);
 		const transicao = this.#emTransicao(v.etapa);
 		const fim = salvo.fim ? formatarFim(resumoFim(salvo, { nds: await ndsDaTabela(salvo) })) : null;
@@ -534,10 +525,6 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 		// O vencedor da rodada é o painel persistente do tabuleiro (resultadoRodada no template).
 	}
 
-	static #moverPorBotao(_ev, alvo) {
-		return this.#mover(alvo.dataset.heroi, Number(alvo.dataset.para));
-	}
-
 	/** Mestre grava direto; jogador valida aqui (para avisar) e pede ao mestre, que valida de novo e grava. */
 	async #mover(uuid, para) {
 		const estado = lerBatalha(this.idBatalha);
@@ -669,23 +656,6 @@ function larguraDaBarraLateral() {
 		}
 	}
 	return Math.max(0, Math.ceil(window.innerWidth - esquerda));
-}
-
-/* ---------------- Posicionamento: botões com o destino ---------------- */
-
-/** Um botão por destino possível: ← recuar, avançar →, ↑ subir aos céus, ↓ descer dos céus. */
-function botoesDeMovimento(opcao, areas) {
-	const nome = (i) => areas.find((a) => a.indice === i)?.nome ?? "";
-	return opcao.destinos
-		.filter((para) => para !== opcao.de)
-		.map((para) => {
-			const sobe = para === 4, desce = opcao.de === 4;
-			const icone = sobe ? "fa-arrow-up" : desce ? "fa-arrow-down" : para < opcao.de ? "fa-arrow-left" : "fa-arrow-right";
-			const antes = sobe || desce || para < opcao.de;
-			const rotulo = sobe ? L("Posicionamento.Subir") : desce ? L("Posicionamento.Descer", { area: nome(para) })
-				: para < opcao.de ? L("Posicionamento.Recuar") : L("Posicionamento.Avancar");
-			return { para, icone, antes, rotulo, dica: nome(para) };
-		});
 }
 
 /* ---------------- Preparação e Posicionamento: quem precisa marcar "concluí" ---------------- */

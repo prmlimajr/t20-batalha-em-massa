@@ -990,6 +990,8 @@ button.t20bm-icone {
 	border-top: 2px solid rgba(236, 228, 210, 0.22);
 }
 .t20bm-area-campo.area-ceu { border-left: none; }
+/* Sob os céus: tokens centralizados no eixo x. */
+.t20bm-area-campo.area-ceu .t20bm-herois { justify-content: center; }
 .t20bm-area-ceu-config legend label { display: inline-flex; align-items: center; gap: 6px; font-weight: bold; }
 .t20bm-medidas { font-weight: bold; }
 
@@ -1423,13 +1425,6 @@ button.t20bm-icone {
 	gap: 8px 14px;
 	margin-top: 12px;
 }
-.t20bm-movimento-linha {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-}
-.t20bm-movimento-linha .t20bm-sobretitulo { margin-right: 4px; color: var(--bm-ouro); }
-.t20bm-movimento-feito { font-size: 13px; color: #cfe3c3; }
 .t20bm-movimento-dica { font-size: 12px; color: var(--bm-texto-suave); flex-basis: 100%; }
 
 /* Aviso dentro do tabuleiro (as notificações do Foundry podem ficar atrás da camada do modal) */

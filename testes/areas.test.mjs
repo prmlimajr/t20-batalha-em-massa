@@ -6,14 +6,14 @@ import { validarMovimento, moverHeroi, opcoesDeMovimento, registrarInicio } from
 import { visaoBatalha } from "../scripts/visao.js";
 import { aplicarConfiguracao } from "../scripts/configuracao.js";
 import { composicaoBonus } from "../scripts/generais.js";
-import { alternarMorto } from "../scripts/posicionamento.js";
-const alternarMortoH2 = (e) => alternarMorto(e, "h2");
 
 const semCeu = completarEstado({});
 const comCeu = completarEstado({ ceu: { ativo: true, nome: "Céus de Svalas", imagem: "ceu.png", mod: 7 } });
 
 /* Padrões */
-assert.deepEqual(estadoPadrao().ceu, { ativo: false, nome: "Combate aéreo", imagem: "", mod: 5 });
+assert.deepEqual(estadoPadrao().ceu, { ativo: false, nome: "Combate aéreo", imagem: "modules/t20-batalha-em-massa/assets/sobosceus.jpeg", mod: 5 });
+assert.equal(completarEstado({ ceu: { ativo: true, imagem: "" } }).ceu.imagem, "modules/t20-batalha-em-massa/assets/sobosceus.jpeg", "vazia: usa a padrão");
+assert.equal(completarEstado({ ceu: { imagem: "minha.png" } }).ceu.imagem, "minha.png");
 assert.equal(ceuAtivo(semCeu), false);
 
 /* Áreas e vizinhança */
@@ -23,10 +23,11 @@ assert.deepEqual(vizinhas(semCeu, 2), [1, 3]);
 assert.deepEqual(vizinhas(comCeu, 0), [1], "do Acampamento não se chega ao céu");
 assert.deepEqual(vizinhas(comCeu, 1), [0, 2, 4]);
 assert.deepEqual(vizinhas(comCeu, 3), [2, 4]);
-assert.deepEqual(vizinhas(comCeu, AREA_CEU), [1, 2, 3], "do céu desce para qualquer área exceto o Acampamento");
+assert.deepEqual(vizinhas(comCeu, AREA_CEU), [0, 1, 2, 3], "do céu desce para qualquer área terrestre, inclusive o Acampamento");
 assert.deepEqual(vizinhas(semCeu, AREA_CEU), []);
 assert.equal(umPasso(comCeu, 4, 4), true);
-assert.equal(umPasso(comCeu, 4, 0), false);
+assert.equal(umPasso(comCeu, 4, 0), true);
+assert.equal(umPasso(comCeu, 0, 4), false, "do Acampamento não sobe");
 
 /* Nome, subtítulo e modificador */
 assert.equal(nomeDaArea(comCeu, 4), "Céus de Svalas");
@@ -48,8 +49,8 @@ let e = moverHeroi(base(), "h1", 4);
 assert.equal(e.grupoArea, 4);
 assert.equal(validarMovimento(e, "h1", 3, j).ok, true, "medido do início (Front): Atrás das linhas é vizinha");
 let doCeu = base({ grupoArea: 4 });
-assert.deepEqual(opcoesDeMovimento(doCeu, { ehGM: false, ehDono: () => true })[0].destinos, [1, 2, 3]);
-assert.equal(validarMovimento(doCeu, "h1", 0, j).motivo, "UmaArea");
+assert.deepEqual(opcoesDeMovimento(doCeu, { ehGM: false, ehDono: () => true })[0].destinos, [0, 1, 2, 3]);
+assert.equal(validarMovimento(doCeu, "h1", 0, j).ok, true, "desce para o Acampamento");
 
 /* Tabuleiro */
 const v = visaoBatalha({ ...comCeu, grupoArea: 4, herois: [{ uuid: "h1", nome: "Amir" }], rodada: { eventos: { 4: { chave: "manterPosicao", nome: "Manter posição", dano: 50 } } } });
@@ -73,18 +74,22 @@ const ligado = completarEstado(noCeu);
 ligado.ceu.mod = "3";
 assert.equal(aplicarConfiguracao(noCeu, ligado).ceu.mod, 3);
 
-/* Só quem voa sobe aos céus */
-import { podeSubir } from "../scripts/posicionamento.js";
+/* Só quem voa sobe aos céus (marca do mestre); desce para qualquer área terrestre */
 import { bonusDaArea } from "../scripts/evento.js";
+import { podeSubir, alternarVoo, alternarMorto } from "../scripts/posicionamento.js";
 import { atorVoa } from "../scripts/configuracao.js";
+for (const de of [1, 2, 3]) assert.equal(validarMovimento(base({ grupoArea: de, herois: [{ uuid: "h1", voa: true }, { uuid: "h2", voa: true }] }), "h1", 4, j).ok, true, `sobe de ${de}`);
 const grupoMisto = base({ herois: [{ uuid: "h1", area: 2, voa: true }, { uuid: "h2", area: 2 }] });
 assert.equal(validarMovimento(grupoMisto, "h1", 4, j).motivo, "GrupoNaoVoa", "grupo junto: todos precisam voar");
-assert.equal(podeSubir(alternarMortoH2(grupoMisto), "h1"), true, "heróis mortos não contam");
-const lobosMisto = base({ opcionais: { lobosSolitarios: true }, herois: [{ uuid: "h1", area: 2, voa: true }, { uuid: "h2", area: 2 }] });
-assert.equal(validarMovimento(lobosMisto, "h1", 4, j).ok, true);
-assert.equal(validarMovimento(lobosMisto, "h2", 4, j).motivo, "NaoVoa");
+assert.equal(podeSubir(alternarMorto(grupoMisto, "h2"), "h1"), true, "heróis mortos não contam");
+assert.equal(validarMovimento(alternarVoo(grupoMisto, "h2"), "h1", 4, j).ok, true, "o mestre marca quem voa");
+const lobos = base({ opcionais: { lobosSolitarios: true }, herois: [{ uuid: "h1", area: 1, voa: true }, { uuid: "h2", area: 1 }, { uuid: "h3", area: 0, voa: true }] });
+assert.equal(validarMovimento(lobos, "h1", 4, j).ok, true);
+assert.equal(validarMovimento(lobos, "h2", 4, j).motivo, "NaoVoa");
+assert.equal(validarMovimento(lobos, "h3", 4, j).motivo, "UmaArea", "do Acampamento não sobe, mesmo voando");
 assert.equal(validarMovimento(grupoMisto, "h1", 4, { ehGM: true }).ok, true, "o mestre move qualquer um");
-assert.deepEqual(opcoesDeMovimento(lobosMisto, { ehGM: false, ehDono: (u) => u === "h2" })[0].destinos, [1, 3]);
+let volta = moverHeroi(doCeu, "h1", 0);
+assert.equal(validarMovimento(volta, "h1", 4, j).ok, true, "começou no céu: desce e pode voltar");
 assert.equal(atorVoa({ system: { attributes: { movement: { fly: { value: 12 } } } } }), true);
 assert.equal(atorVoa({ system: { attributes: { movement: { fly: { value: 0 } } } } }), false);
 assert.equal(atorVoa({}), false);

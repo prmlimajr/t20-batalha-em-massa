@@ -15,7 +15,7 @@ import { areaExiste, areasDisponiveis, umPasso, AREA_CEU } from "./areas.js";
 
 const vivo = (h) => !h.morto;
 
-/** Pode ir para "Sob os céus"? Com o grupo junto, todos os heróis vivos precisam voar. */
+/** Pode ir para "Sob os céus"? Só quem voa; com o grupo junto, todos os heróis vivos precisam voar. */
 export function podeSubir(estado, uuid) {
 	if (estado.opcionais.lobosSolitarios) return !!estado.herois.find((h) => h.uuid === uuid)?.voa;
 	const vivos = estado.herois.filter(vivo);
@@ -109,6 +109,7 @@ export function opcoesDeMovimento(salvo, { ehGM, ehDono }) {
 
 /* ---------------- Heróis: remover, marcar como morto, voo (mestre) ---------------- */
 
+/** Marca (ou desmarca) que o herói voa (pode ir para "Sob os céus"). */
 export function alternarVoo(salvo, uuid) {
 	const e = completarEstado(salvo);
 	e.herois = e.herois.map((h) => (h.uuid === uuid ? { ...h, voa: !h.voa } : h));

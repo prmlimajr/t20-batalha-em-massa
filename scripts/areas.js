@@ -3,9 +3,10 @@
  *
  * 0–3: as quatro áreas terrestres (Acampamento, Retaguarda, Front, Atrás das linhas inimigas), lado a lado.
  * 4:   área opcional de combate aéreo, "Sob os céus" (decisão 27), uma seção só, acima das terrestres.
- *      Regra do combate aéreo: acessível a partir de qualquer posição exceto o Acampamento, e só para quem
- *      voa; modificador de evento +5; CD dos testes de perícia dos eventos +5; o bônus em Guerra dado pelos
- *      personagens por resolver um evento ali aumenta em +2.
+ *      Movimento: sobe aos céus quem voa (marca do mestre por herói) e começou o turno na Retaguarda, no
+ *      Front ou Atrás das linhas inimigas; de lá desce-se para qualquer área terrestre, inclusive o Acampamento.
+ *      Eventos: modificador +5; CD dos testes de perícia +5; o bônus em Guerra dado pelos personagens por
+ *      resolver um evento ali aumenta em +2.
  */
 import { POSICOES } from "./constantes.js";
 
@@ -14,8 +15,10 @@ export const SUBTITULO_CEU = "Sob os céus";
 export const MOD_CEU_PADRAO = 5;
 export const CD_EXTRA_CEU = 5;
 export const BONUS_RESOLVER_CEU = 2;
-/** Áreas terrestres ligadas ao céu (todas menos o Acampamento). */
+/** Áreas terrestres de onde se sobe aos céus (todas menos o Acampamento). */
 export const ACESSO_CEU = [1, 2, 3];
+/** Áreas terrestres para onde se desce dos céus (todas). */
+export const DESCIDA_CEU = [0, 1, 2, 3];
 
 export const ceuAtivo = (estado) => !!estado?.ceu?.ativo;
 
@@ -29,7 +32,7 @@ export const areaExiste = (estado, area) => areasDisponiveis(estado).includes(ar
 
 /** Áreas a um passo de `de`: terrestres vizinhas (±1) e, com o céu ativo, a ligação terra ↔ céu. */
 export function vizinhas(estado, de) {
-	if (de === AREA_CEU) return ceuAtivo(estado) ? [...ACESSO_CEU] : [];
+	if (de === AREA_CEU) return ceuAtivo(estado) ? [...DESCIDA_CEU] : [];
 	const lista = [de - 1, de + 1].filter((i) => i >= 0 && i < POSICOES.length);
 	if (ceuAtivo(estado) && ACESSO_CEU.includes(de)) lista.push(AREA_CEU);
 	return lista.sort((a, b) => a - b);
