@@ -122,12 +122,18 @@
 			"Dica": "Regras opcionais do Apêndice B, por batalha. Lobos solitários define se o grupo anda junto e não pode mudar depois que a batalha começa (para mudar, reinicie a batalha no gerenciador).",
 			"Travada": "travada: a batalha já começou"
 		},
+		"Config": {
+			"OcultarGuerraInimiga": "Ocultar o bônus base do general inimigo",
+			"OcultarGuerraInimigaDica": "Os jogadores não veem a Guerra do general inimigo: no Teste dos Generais aparecem só os modificadores e o resultado final, sem o d20 nem o bônus total. Vale também para os cartões do chat e para a Guerra do novo general inimigo. Com o Dice So Nice, a rolagem do general inimigo é secreta: os dados animam só para o mestre. O mestre continua vendo tudo no tabuleiro."
+		},
 		"Modal": {
 			"Local": "Local",
 			"Turno": "Turno {n}",
 			"PreBatalha": "Pré-batalha",
 			"Pontos": "Pontos",
 			"Substituto": "Substituto",
+			"Suboficial": "Um suboficial",
+			"SuboficialDica": "O substituto já assumiu o comando. Se este general também sair, um oficial assume com a Guerra dele −1d6−1.",
 			"Personalidades": "Personalidades presentes",
 			"SemModificadores": "Sem modificadores de Guerra",
 			"Progresso": "Progresso do turno",
@@ -233,6 +239,7 @@
 			"Oficial": "Um oficial",
 			"GanhaPontos": "{exercito} ganha {pontos} pontos de vitória.",
 			"NovoGeneral": "{nome} assume o exército inimigo com Guerra {guerra} (−{penalidade}).",
+			"NovoGeneralOculto": "{nome} assume o exército inimigo com −{penalidade} em Guerra.",
 			"AbrirFichaInimigo": "Abrir a ficha do inimigo (para as rolagens de ataque)",
 			"InclusiveEstandartes": "(inclui +{valor} de estandartes)"
 		},

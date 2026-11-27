@@ -7,7 +7,7 @@
  *
  * Spec: SDD/t20-batalha-em-massa/feature/spec.md
  */
-import { MODULE_ID, L, log } from "./modulo.js";
+import { MODULE_ID, L, log, OCULTAR_GUERRA_INIMIGA } from "./modulo.js";
 import { registrarSocket } from "./socket.js";
 import * as armazenamento from "./armazenamento.js";
 import { GerenciadorBatalhas, MenuGerenciador } from "./apps/gerenciador.js";
@@ -25,6 +25,15 @@ function registrarConfiguracoes() {
 		icon: "fa-solid fa-chess-rook",
 		type: MenuGerenciador,
 		restricted: true
+	});
+	game.settings.register(MODULE_ID, OCULTAR_GUERRA_INIMIGA, {
+		name: "T20BM.Config.OcultarGuerraInimiga",
+		hint: "T20BM.Config.OcultarGuerraInimigaDica",
+		scope: "world",
+		config: true,
+		type: Boolean,
+		default: false,
+		onChange: () => ModalBatalha.atualizar()
 	});
 }
 

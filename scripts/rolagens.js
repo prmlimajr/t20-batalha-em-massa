@@ -2,7 +2,8 @@
  * Rolagens com o Roll do Foundry + mensagens de chat.
  * T5: sorteio de inimigo. T8: testes de pré-batalha e lembretes. (T10/T11 acrescentam evento e generais.)
  */
-import { MODULE_ID, L, caminho } from "./modulo.js";
+import { MODULE_ID, L, caminho, guerraInimigaOculta } from "./modulo.js";
+import { mostraGuerra, OCULTO } from "./generais.js";
 import { formulaInimigos, inimigoDaFace, vencedorOposto, motivacao, eventoPorTotal, cdDaBatalha } from "./regras.js";
 import { modDaArea, nomeDaArea, subtituloDaArea, AREA_CEU, CD_EXTRA_CEU, BONUS_RESOLVER_CEU } from "./areas.js";
 import { CD_MOTIVACAO, TEXTO_PREPARACAO, MECANICAS, TAMANHOS, PONTOS_DERROTAR_GENERAL, PENALIDADE_NOVO_GENERAL } from "./constantes.js";
@@ -111,14 +112,34 @@ async function rolarD20(bonus) {
 	return new Roll("1d20 + @bonus", { bonus }).evaluate();
 }
 
-async function enviarCartao(dados, rolls) {
+async function enviarCartao(dados, rolls, { som = false } = {}) {
 	const content = await renderizar("teste.hbs", dados);
-	await ChatMessage.create({
+	const mensagem = {
 		speaker: ChatMessage.getSpeaker({ alias: L("Titulo") }),
 		content,
 		rolls,
 		flags: { [MODULE_ID]: { tipo: dados.tipo } }
-	});
+	};
+	if (som) mensagem.sound = CONFIG.sounds.dice;
+	await ChatMessage.create(mensagem);
+}
+
+/**
+ * Rolagem secreta: anima os dados no Dice So Nice só para os mestres; os outros jogadores veem dados
+ * fantasmas (se tiverem essa opção ligada no Dice So Nice) ou nada. O cartão vai para o chat sem o Roll
+ * anexado, para que nem a animação pública nem os dados da mensagem revelem o d20 e o bônus.
+ * @returns {Promise<boolean>} true se o Dice So Nice animou (senão, o cartão toca o som de dados)
+ */
+async function animarSecreta(roll) {
+	if (!game.dice3d?.showForRoll) return false;
+	const mestres = game.users.filter((u) => u.isGM && u.active).map((u) => u.id);
+	try {
+		await game.dice3d.showForRoll(roll, game.user, true, mestres, false);
+		return true;
+	} catch (erro) {
+		console.warn(`${MODULE_ID} | Dice So Nice falhou na rolagem secreta`, erro);
+		return false;
+	}
 }
 
 const nomePericia = (chave) => game.i18n.localize(CONFIG.T20?.pericias?.[chave]?.label ?? chave);
@@ -253,7 +274,9 @@ export async function rolarDerrotaGeneral(estado) {
 		titulo: L("Evento.GeneralDerrotado"),
 		subtitulo: inimigo.general?.nome || retratoVivo(inimigo.general).nome,
 		resultado: L("Evento.GanhaPontos", { exercito: estado.exercitos[0].nome, pontos: pontos.total }),
-		notas: [L("Evento.NovoGeneral", { nome: novo, guerra: comSinal(anterior - penalidade.total), penalidade: penalidade.total })]
+		notas: [guerraInimigaOculta()
+			? L("Evento.NovoGeneralOculto", { nome: novo, penalidade: penalidade.total })
+			: L("Evento.NovoGeneral", { nome: novo, guerra: comSinal(anterior - penalidade.total), penalidade: penalidade.total })]
 	}, [pontos, penalidade]);
 	return { pontos: pontos.total, penalidade: penalidade.total };
 }
@@ -271,7 +294,9 @@ export async function rolarNovoOficial(estado, lado) {
 		tipo: "novoOficial",
 		titulo: L("Generais.Remover"),
 		subtitulo: `${ex.nome} · ${ex.general?.nome || retratoVivo(ex.general).nome || ""}`,
-		resultado: L("Evento.NovoGeneral", { nome: L("Evento.Oficial"), guerra: comSinal(guerra), penalidade: penalidade.total })
+		resultado: mostraGuerra(lado, { ocultar: guerraInimigaOculta(), ehGM: false })
+			? L("Evento.NovoGeneral", { nome: L("Evento.Oficial"), guerra: comSinal(guerra), penalidade: penalidade.total })
+			: L("Evento.NovoGeneralOculto", { nome: L("Evento.Oficial"), penalidade: penalidade.total })
 	}, [penalidade]);
 	return guerra;
 }
@@ -290,18 +315,21 @@ export async function rolarNovoOficial(estado, lado) {
 export async function rolarGeneral(estado, lado, composicao) {
 	const roll = await new Roll("1d20 + @bonus", { bonus: composicao.total }).evaluate();
 	const d20 = roll.dice[0]?.total ?? roll.total - composicao.total;
+	// O cartão é público: com o bônus base do general inimigo oculto, só o total aparece (sem d20 nem bônus).
+	const mostra = mostraGuerra(lado, { ocultar: guerraInimigaOculta(), ehGM: false });
+	const animou = !mostra && (await animarSecreta(roll));
 	await enviarCartao({
 		tipo: "general",
 		titulo: L("Generais.Cartao"),
 		subtitulo: game.user.isGM ? "" : L("Generais.RoladoPor", { nome: game.user.name }),
 		linhas: [{
 			...ladoDoCartao(estado, lado),
-			d20,
-			bonusTxt: comSinal(composicao.total),
+			d20: mostra ? d20 : "",
+			bonusTxt: mostra ? comSinal(composicao.total) : "",
 			total: roll.total
 		}],
-		notas: composicao.itens.map((i) => `${comSinal(i.valor)} ${i.texto}`)
-	}, [roll]);
+		notas: composicao.itens.map((i) => `${i.base && !mostra ? OCULTO : comSinal(i.valor)} ${i.texto}`)
+	}, mostra ? [roll] : [], { som: !mostra && !animou });
 	return d20;
 }
 

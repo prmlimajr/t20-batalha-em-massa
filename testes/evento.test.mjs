@@ -86,8 +86,19 @@ assert.equal(temSubstituto(sg.exercitos[0]), true);
 sg = substituirGeneral(sg, 0, "12");
 assert.deepEqual(sg.exercitos[0].general, { uuid: "Actor.nm", nome: "Nobre Menor", img: "n.png", guerra: 12 });
 assert.equal(temSubstituto(sg.exercitos[0]), false);
+assert.equal(sg.exercitos[0].substituto.suboficial, true, "o lugar do substituto que assumiu vira um suboficial");
 sg = substituirGeneral(sg, 0, 8); // sem substituto: um oficial sem nome
 assert.deepEqual(sg.exercitos[0].general, { uuid: null, nome: "", img: null, guerra: 8 });
+assert.equal(sg.exercitos[0].substituto.suboficial, true, "o suboficial continua no lugar");
+{
+	const { visaoBatalha } = await import("../scripts/visao.js");
+	assert.equal(visaoBatalha(sg).exercitos[0].suboficial, true);
+	assert.equal(visaoBatalha(sg).exercitos[0].substituto, null);
+	// Nunca houve substituto: oficial assume, sem suboficial
+	const ns = substituirGeneral(completarEstado({ exercitos: [{ general: { nome: "A", guerra: 5 } }, {}] }), 0, 3);
+	assert.equal(ns.exercitos[0].substituto.suboficial, false);
+	assert.equal(visaoBatalha(ns).exercitos[0].suboficial, false);
+}
 console.log("evento: ok");
 
 /* Substituto com Guerra cadastrada (configurador) */

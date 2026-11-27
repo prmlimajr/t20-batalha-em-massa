@@ -112,7 +112,7 @@ export const temSubstituto = (ex) => !!(ex?.substituto?.uuid || ex?.substituto?.
 /**
  * O general de um exército sai de cena (removido pelo mestre ou derrotado): o substituto assume, com o
  * bônus de Guerra informado, e passa a rolar nos próximos Testes dos Generais. Sem substituto, um oficial
- * sem nome assume. O exército fica sem substituto.
+ * sem nome assume. O exército fica sem substituto; se um substituto assumiu, o lugar dele mostra um suboficial.
  */
 export function substituirGeneral(salvo, lado, guerra) {
 	const e = completarEstado(salvo);
@@ -122,7 +122,9 @@ export function substituirGeneral(salvo, lado, guerra) {
 	ex.general = temSubstituto(ex)
 		? { ...semGuerra, guerra: valor }
 		: { uuid: null, nome: "", img: null, guerra: valor };
-	ex.substituto = { uuid: null, nome: "", img: null, guerra: null };
+	// O lugar do substituto que assumiu fica com um suboficial (só um marcador no tabuleiro: o próximo
+	// general, se este também sair, continua sendo um oficial pela regra de general derrotado).
+	ex.substituto = { uuid: null, nome: "", img: null, guerra: null, suboficial: temSubstituto(ex) || !!ex.substituto?.suboficial };
 	return e;
 }
 

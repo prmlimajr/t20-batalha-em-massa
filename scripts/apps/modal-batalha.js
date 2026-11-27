@@ -9,7 +9,7 @@
  *   centralizado (altura máxima de 80% da tela). A barra lateral fica livre e qualquer janela do Foundry
  *   (fichas, chat destacado, diálogos) aparece por cima do modal: os jogadores sempre veem o chat e a ficha.
  */
-import { L, caminho } from "../modulo.js";
+import { L, caminho, guerraInimigaOculta } from "../modulo.js";
 import { lerBatalha, gravarBatalha, idExibida, exibirParaTodos, encerrarExibicao, reiniciar } from "../armazenamento.js";
 import { resumoFim, declararVencedor } from "../fim.js";
 import {
@@ -20,7 +20,7 @@ import {
 	rolarTesteOposto, rolarMotivacao, lembretePreparacao, rolarEvento, rolarInimigo, rolarDerrotaGeneral, rolarGeneral,
 	ndsDaTabela, enviarResumoFim, rolarNovoOficial
 } from "../rolagens.js";
-import { composicaoBonus, podeRolar, registrarRolagem, sortearJogador, definirQuemRola, resetarGenerais } from "../generais.js";
+import { composicaoBonus, mostraGuerra, OCULTO, podeRolar, registrarRolagem, sortearJogador, definirQuemRola, resetarGenerais } from "../generais.js";
 import { atualizarResolucao, alternarEstandarte, derrotarGeneralInimigo, definirAjuste, substituirGeneral, temSubstituto, guerraDoSubstituto } from "../evento.js";
 import { animarAbertura } from "../abertura.js";
 import { validarMovimento, moverHeroi, opcoesDeMovimento, removerHeroi, alternarMorto, alternarVoo } from "../posicionamento.js";
@@ -32,6 +32,8 @@ import { ConfiguradorBatalha } from "./configurador.js";
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 
 const INTERVALO_CARROSSEL = 5000;
+/** Pausa entre a última rolagem do Teste dos Generais e o vencedor do turno aparecer no tabuleiro. */
+const ATRASO_RESULTADO = 2000;
 
 
 export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
@@ -112,7 +114,7 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 	/* ---------------- Dados ---------------- */
 
 	async _prepareContext() {
-		const salvo = lerBatalha(this.idBatalha);
+		const salvo = this.#segurarResultado(lerBatalha(this.idBatalha));
 		const v = visaoBatalha(salvo, { resolver: (r) => retratoVivo(r) });
 		const gm = game.user.isGM;
 		const ehDono = (uuid) => !!fromUuidSync(uuid, { strict: false })?.isOwner;
@@ -349,6 +351,33 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 	}
 
 	/**
+	 * Suspense do Teste dos Generais: quando a segunda rolagem resolve a rodada, as duas rolagens aparecem
+	 * já, mas o vencedor (painel, pontos no placar, fuga, fim da batalha) só depois de ATRASO_RESULTADO.
+	 * Quem abre o tabuleiro com a rodada já resolvida vê o resultado direto.
+	 * @returns {object} o estado a desenhar: o salvo, ou uma cópia com o resultado ainda desfeito
+	 */
+	#segurarResultado(salvo) {
+		const r = salvo.rodada?.resultadoGenerais;
+		const chave = salvo.etapa === "generais" && r && !r.empate && r.vencedor !== undefined
+			? `${salvo.turno}:${r.vencedor}:${r.pontos}:${r.totais?.join("x")}` : null;
+		const primeiraVez = !this.rendered;
+		if (chave !== this.chaveResultado) {
+			const anterior = this.chaveResultado;
+			this.chaveResultado = chave;
+			if (chave && !primeiraVez && anterior !== undefined) {
+				this.segurarAte = Date.now() + ATRASO_RESULTADO;
+				clearTimeout(this.timerResultado);
+				this.timerResultado = setTimeout(() => this.rendered && this.render(), ATRASO_RESULTADO);
+			} else this.segurarAte = 0;
+		}
+		if (!chave || Date.now() >= (this.segurarAte ?? 0)) return salvo;
+		// Desfaz o resultado (pontos, histórico, fuga, fim) mas mantém as duas rolagens à mostra.
+		const oculto = resetarGenerais(salvo);
+		oculto.rodada.generais = salvo.rodada.generais;
+		return oculto;
+	}
+
+	/**
 	 * Painel do vencedor da rodada: fica sobre o tabuleiro até o mestre encerrar o turno.
 	 * A animação de entrada toca uma vez por resultado (não a cada atualização).
 	 */
@@ -553,6 +582,7 @@ export class ModalBatalha extends HandlebarsApplicationMixin(ApplicationV2) {
 		this.#pararCarrosseis();
 		window.removeEventListener("resize", this.aoRedimensionar);
 		if (this.ganchoBarra) Hooks.off("collapseSidebar", this.ganchoBarra);
+		clearTimeout(this.timerResultado);
 		if (ModalBatalha.#atual === this) ModalBatalha.#atual = null;
 		return super.close(options);
 	}
@@ -708,10 +738,13 @@ function dadosGenerais(estado, v, gm) {
 	v.exercitos.forEach((ex, i) => {
 		const comp = composicaoBonus(estado, i);
 		const rolagem = estado.rodada.generais?.[i] ?? null;
+		// Bônus base oculto (configuração do mundo): sem ele, o bônus total e o d20 também o denunciariam.
+		const mostra = mostraGuerra(i, { ocultar: guerraInimigaOculta(), ehGM: gm });
 		ex.teste = {
 			lado: i,
-			itens: comp.itens.map((it) => ({ ...it, valorTxt: sinal(it.valor) })),
-			totalTxt: sinal(comp.total),
+			itens: comp.itens.map((it) => ({ ...it, valorTxt: it.base && !mostra ? OCULTO : sinal(it.valor) })),
+			totalTxt: mostra ? sinal(comp.total) : OCULTO,
+			oculto: !mostra,
 			rolagem: rolagem && { ...rolagem, bonusTxt: sinal(rolagem.bonus) },
 			podeRolar: podeRolar(estado, i, { ehGM: gm, userId: game.user.id }),
 			quem: i === 0 && sorteado ? sorteado.name : L("Generais.Mestre"),
@@ -749,6 +782,10 @@ registrarTratador("rolagemGeneral", async ({ idBatalha, lado, d20 }, usuario) =>
 async function gravarComFim(id, anterior, novo) {
 	await gravarBatalha(id, novo);
 	if (!anterior.fim && novo.fim) {
+		// Fim pelo Teste dos Generais: o resumo no chat espera o vencedor do turno aparecer no tabuleiro.
+		const resolvida = (e) => e.rodada?.resultadoGenerais?.vencedor !== undefined;
+		const peloTeste = !resolvida(anterior) && resolvida(novo);
+		if (peloTeste) await new Promise((ok) => setTimeout(ok, ATRASO_RESULTADO));
 		const dados = formatarFim(resumoFim(novo, { nds: await ndsDaTabela(novo) }));
 		await enviarResumoFim(dados);
 	}

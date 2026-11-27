@@ -14,3 +14,7 @@ export const L = (chave, dados) => dados
 	: game.i18n.localize(`T20BM.${chave}`);
 
 export const log = (...args) => console.log(`${MODULE_ID} |`, ...args);
+
+/** Configuração do mundo: ocultar dos jogadores o bônus base (Guerra) do general inimigo. */
+export const OCULTAR_GUERRA_INIMIGA = "ocultarGuerraInimiga";
+export const guerraInimigaOculta = () => !!game.settings.get(MODULE_ID, OCULTAR_GUERRA_INIMIGA);

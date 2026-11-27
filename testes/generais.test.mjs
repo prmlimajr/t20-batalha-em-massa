@@ -107,3 +107,14 @@ z = resetarGenerais(rr.estado);
 assert.deepEqual([z.fim, z.exercitos[0].pontos, z.fugindo], [null, 9, null]);
 assert.deepEqual(resetarGenerais(batalha()).rodada.generais, {}, "sem resultado: só limpa");
 console.log("refazer generais: ok");
+
+/* Bônus base oculto (configuração "ocultar o bônus base do general inimigo") */
+{
+	const { mostraGuerra } = await import("../scripts/generais.js");
+	assert.equal(composicaoBonus(batalha(), 1).itens[0].base, true);
+	assert.equal(composicaoBonus(batalha(), 1).itens.filter((i) => i.base).length, 1);
+	assert.equal(mostraGuerra(1, { ocultar: true, ehGM: false }), false);
+	assert.equal(mostraGuerra(1, { ocultar: true, ehGM: true }), true);
+	assert.equal(mostraGuerra(0, { ocultar: true, ehGM: false }), true);
+	assert.equal(mostraGuerra(1, { ocultar: false, ehGM: false }), true);
+}

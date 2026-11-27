@@ -61,6 +61,7 @@ export function visaoBatalha(salvo, { resolver = (r) => r } = {}) {
 			pontos: doisDigitos(ex.pontos),
 			general: temConteudo(ex.general) ? resolver(ex.general) : null,
 			substituto: temConteudo(ex.substituto) ? resolver(ex.substituto) : null,
+			suboficial: !temConteudo(ex.substituto) && !!ex.substituto?.suboficial,
 			personalidades: resolverLista(ex.personalidades),
 			estandartes: resolverLista(ex.estandartes).map((s) => ({ ...s, carregado: !!s.carregadoPor })),
 			temPortador: portador.size > 0,

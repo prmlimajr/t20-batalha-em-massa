@@ -57,7 +57,7 @@ export function composicaoBonus(salvo, lado) {
 	const ex = e.exercitos[lado];
 	const itens = [];
 	const guerra = Number(ex.general?.guerra);
-	itens.push({ valor: Number.isFinite(guerra) ? guerra : 0, texto: `Guerra do general${ex.general?.nome ? ` (${ex.general.nome})` : ""}` });
+	itens.push({ valor: Number.isFinite(guerra) ? guerra : 0, texto: `Guerra do general${ex.general?.nome ? ` (${ex.general.nome})` : ""}`, base: true });
 	for (const m of ex.modificadores) {
 		const v = Number(m.valor) || 0;
 		if (v) itens.push({ valor: v, texto: m.nome + (m.detalhe ? ` (${m.detalhe})` : "") });
@@ -70,6 +70,15 @@ export function composicaoBonus(salvo, lado) {
 	}
 	return { itens, total: itens.reduce((s, i) => s + i.valor, 0) };
 }
+
+/**
+ * Pode mostrar o bônus base (Guerra) do general deste lado? Com a configuração "ocultar o bônus base do
+ * general inimigo", só o mestre vê o do exército inimigo (lado 1) — e, nos cartões do chat (públicos), ninguém.
+ */
+export const mostraGuerra = (lado, { ocultar, ehGM }) => !(ocultar && lado === 1 && !ehGM);
+
+/** Texto do valor de um item da composição; o bônus base oculto vira "?". */
+export const OCULTO = "?";
 
 /* ---------------- Quem rola ---------------- */
 

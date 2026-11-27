@@ -154,6 +154,12 @@
 							<img class="t20bm-token substituto {{#if substituto.podeVer}}clicavel{{/if}}" src="{{substituto.img}}" alt="" {{#if substituto.podeVer}}data-action="abrirFicha" data-uuid="{{substituto.uuid}}"{{/if}}>
 							{{substituto.nome}}
 						</span>
+						{{else if suboficial}}
+						<span class="t20bm-sobretitulo">{{localize "T20BM.Modal.Substituto"}}</span>
+						<span class="t20bm-substituto suboficial">
+							<span class="t20bm-token substituto vazio" data-tooltip="T20BM.Modal.SuboficialDica"><i class="fa-solid fa-user-shield"></i></span>
+							{{localize "T20BM.Modal.Suboficial"}}
+						</span>
 						{{/if}}
 					</div>
 				</div>
@@ -200,7 +206,7 @@
 					<div class="t20bm-composicao-total"><span>{{localize "T20BM.Generais.Total"}}</span><b>{{teste.totalTxt}}</b></div>
 					{{#if teste.rolagem}}
 					<div class="t20bm-rolagem-general">
-						<span>1d20 <b>{{teste.rolagem.d20}}</b> {{teste.rolagem.bonusTxt}} =</span>
+						{{#unless teste.oculto}}<span>1d20 <b>{{teste.rolagem.d20}}</b> {{teste.rolagem.bonusTxt}} =</span>{{/unless}}
 						<strong>{{teste.rolagem.total}}</strong>
 						{{#if teste.venceu}}<span class="t20bm-venceu"><i class="fa-solid fa-trophy"></i> {{localize "T20BM.Generais.Vencedor"}}</span>{{/if}}
 					</div>
